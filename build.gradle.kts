@@ -29,7 +29,8 @@ android {
 }
 
 dependencies {
-    api(project(mapOf("path" to ":crypto:tink")))
+    api(project(":crypto:tink"))
+    api(project(":ui:compose-core"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
