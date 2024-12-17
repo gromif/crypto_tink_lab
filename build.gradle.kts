@@ -10,6 +10,9 @@ android {
 
     defaultConfig {
         minSdk = project.property("minSdk").toString().toInt()
+        testOptions {
+            targetSdk = project.property("targetSdk").toString().toInt()
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
