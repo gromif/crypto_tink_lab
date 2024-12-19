@@ -1,6 +1,6 @@
 package com.nevidimka655.tink_lab.data
 
-import com.nevidimka655.crypto.tink.KeysetTemplates
+import com.nevidimka655.crypto.tink.domain.KeysetTemplates
 
 internal val AeadTypesText = KeysetTemplates.AEAD.entries.map { it.name.lowercase() }
 
