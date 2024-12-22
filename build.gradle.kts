@@ -13,7 +13,7 @@ android {
 }
 
 dependencies {
-    api(project(":crypto:tink"))
+    implementation(projects.core.tink)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
