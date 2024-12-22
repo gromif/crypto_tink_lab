@@ -6,10 +6,6 @@ plugins {
 android {
     namespace = "com.nevidimka655.tink_lab"
     defaultConfig {
-        testOptions {
-            targetSdk = project.property("targetSdk").toString().toInt()
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
         buildFeatures.compose = true
