@@ -1,15 +1,11 @@
 plugins {
-    alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.astracrypt.android.library)
     alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.nevidimka655.tink_lab"
-    compileSdk = project.property("compileSdk").toString().toInt()
-
     defaultConfig {
-        minSdk = project.property("minSdk").toString().toInt()
         testOptions {
             targetSdk = project.property("targetSdk").toString().toInt()
         }
@@ -18,18 +14,8 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         buildFeatures.compose = true
     }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-        }
-    }
 }
 
-
-kotlin {
-    jvmToolchain(project.property("kotlinJvmToolchainVersion").toString().toInt())
-}
 dependencies {
     api(project(":crypto:tink"))
     api(project(":ui:compose-core"))
