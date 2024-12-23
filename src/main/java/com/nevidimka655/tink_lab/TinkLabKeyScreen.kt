@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,12 +22,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,10 +37,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.tink_lab.data.AeadTypesFiles
 import com.nevidimka655.tink_lab.data.AeadTypesText
 import com.nevidimka655.tink_lab.domain.model.DataItem
@@ -48,19 +54,68 @@ import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
+import kotlin.text.get
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
 fun TinkLabKeyScreen(
+    modifier: Modifier = Modifier,
+    aeadTypeString: String = "Encryption type",
+    dataTypeString: String = "Data type",
+    keysetKeyString: String = "Keyset key",
+    dataTypeFilesString: String = "Files",
+    dataTypeTextString: String = "Text",
+    buttonLoadString: String = "Load",
+    buttonSaveString: String = "Save"
+) {
+    val vm: TinkLabKeyViewModel = hiltViewModel()
+
+    val dataTypes = remember {
+        listOf(
+            DataItem(dataTypeFilesString, DataType.Files),
+            DataItem(dataTypeTextString, DataType.Text)
+        )
+    }
+    var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
+    var keysetPassword by rememberSaveable { mutableStateOf("") }
+    var aeadType by rememberSaveable { mutableStateOf("") }
+    val keyset by vm.keyState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(keysetPassword, aeadType) {
+        if (aeadType.isNotEmpty()) vm.shuffleKeyset(
+            keysetPassword = keysetPassword,
+            dataType = dataTypes[selectedDataTypeIndex].type,
+            aeadType = aeadType
+        )
+    }
+
+    Screen(
+        modifier = modifier,
+        keysetHash = keyset.hash.take(16),
+        aeadTypeLabel = aeadTypeString,
+        dataTypeLabel = dataTypeString,
+        keysetKeyLabel = keysetKeyString,
+        dataTypes = dataTypes,
+        selectedDataType = dataTypes[selectedDataTypeIndex],
+        onSelectDataType = { selectedDataTypeIndex = it },
+        onSelectAeadType = { aeadType = it },
+        keysetKey = keysetPassword,
+        onChangeKeysetKey = { keysetPassword = it },
+        buttonLoadText = buttonLoadString,
+        buttonSaveText = buttonSaveString
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+private fun Screen(
     modifier: Modifier = Modifier,
     keysetHash: String = "keyset_hash",
     aeadTypeLabel: String = "Encryption type",
     dataTypeLabel: String = "Data type",
     keysetKeyLabel: String = "Keyset key",
     dataTypes: List<DataItem> = listOf(
-        DataItem("Files", DataType.Files),
-        DataItem("Text", DataType.Text)
+        DataItem("Files", DataType.Files), DataItem("Text", DataType.Text)
     ),
     selectedDataType: DataItem = dataTypes[0],
     onSelectDataType: (Int) -> Unit = {},
@@ -75,18 +130,24 @@ fun TinkLabKeyScreen(
         .verticalScroll(rememberScrollState()),
     contentAlignment = Alignment.Center
 ) {
-    val defaultVerticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
-    val defaultHorizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceSmall)
     ElevatedCard {
+        val localWindowWidth = LocalWindowWidth.current
+        val defaultVerticalArrangement = Arrangement.spacedBy(
+            MaterialTheme.spaces.spaceMedium, Alignment.CenterVertically
+        )
+        val defaultHorizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceSmall)
         Column(
-            modifier = Modifier.padding(MaterialTheme.spaces.spaceMedium),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .padding(MaterialTheme.spaces.spaceMedium),
             verticalArrangement = defaultVerticalArrangement,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             var showDataTypeMenu by remember { mutableStateOf(false) }
 
             @Composable
-            fun dataTypeMenu() = DataTypeMenu(
+            fun dataTypeMenu(modifier: Modifier = Modifier.fillMaxWidth()) = DataTypeMenu(
+                modifier = modifier,
                 expanded = showDataTypeMenu,
                 text = selectedDataType.title,
                 label = dataTypeLabel,
@@ -117,9 +178,7 @@ fun TinkLabKeyScreen(
 
             @Composable
             fun keysetKeyField() = KeysetKeyTextField(
-                value = keysetKey,
-                onValueChange = onChangeKeysetKey,
-                label = keysetKeyLabel
+                value = keysetKey, onValueChange = onChangeKeysetKey, label = keysetKeyLabel
             )
 
             @Composable
@@ -128,14 +187,21 @@ fun TinkLabKeyScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier
             ) {
-                ToolbarButton(imageVector = Icons.Default.Add, text = buttonLoadText)
-                ToolbarButton(imageVector = Icons.Default.Save, text = buttonSaveText)
+                ToolbarButton(
+                    imageVector = Icons.Default.Add,
+                    text = buttonLoadText,
+                    modifier = Modifier.weight(0.5f)
+                )
+                ToolbarButton(
+                    imageVector = Icons.Default.Save,
+                    text = buttonSaveText,
+                    modifier = Modifier.weight(0.5f)
+                )
             }
 
             @Composable
             fun keysetInfo() = Text(keysetHash)
 
-            val localWindowWidth = LocalWindowWidth.current
             if (localWindowWidth.isCompact) {
                 keysetKeyField()
                 dataTypeMenu()
@@ -146,6 +212,7 @@ fun TinkLabKeyScreen(
                 Row(horizontalArrangement = defaultHorizontalArrangement) {
                     val horizontalAlignment = Alignment.CenterHorizontally
                     Column(
+                        modifier = Modifier.weight(0.5f),
                         verticalArrangement = defaultVerticalArrangement,
                         horizontalAlignment = horizontalAlignment
                     ) {
@@ -153,11 +220,14 @@ fun TinkLabKeyScreen(
                         dataTypeMenu()
                     }
                     Column(
+                        modifier = Modifier.weight(0.5f),
                         verticalArrangement = defaultVerticalArrangement,
                         horizontalAlignment = horizontalAlignment
                     ) {
                         aeadTypeMenu()
-                        toolbar(modifier = Modifier.height(TextFieldDefaults.MinHeight))
+                        toolbar(
+                            modifier = Modifier.height(TextFieldDefaults.MinHeight)
+                        )
                     }
                 }
                 keysetInfo()
@@ -173,7 +243,7 @@ private fun KeysetKeyTextField(
     label: String,
 ) {
     var passwordToggleState by remember { mutableStateOf(false) }
-    TextField(
+    OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         leadingIcon = { Icon(imageVector = Icons.Default.Key, null) },
@@ -190,15 +260,15 @@ private fun KeysetKeyTextField(
                 Icon(
                     imageVector = if (!passwordToggleState) {
                         Icons.Default.VisibilityOff
-                    } else Icons.Default.Visibility,
-                    contentDescription = null
+                    } else Icons.Default.Visibility, contentDescription = null
                 )
             }
         },
         visualTransformation = if (!passwordToggleState) {
             PasswordVisualTransformation()
         } else VisualTransformation.None,
-        singleLine = true
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -211,9 +281,5 @@ private fun ToolbarButton(
     enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) = FilledTonalButtonWithIcon(
-    modifier = modifier,
-    enabled = enabled,
-    icon = imageVector,
-    title = text,
-    onClick = onClick
+    modifier = modifier, enabled = enabled, icon = imageVector, title = text, onClick = onClick
 )
