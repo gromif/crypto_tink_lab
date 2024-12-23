@@ -9,7 +9,6 @@ android {
     namespace = "com.nevidimka655.tink_lab"
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 }
 
@@ -19,6 +18,7 @@ dependencies {
     implementation(projects.di.tinkLab)
 
     implementation(projects.core.tink)
+    implementation(projects.di.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
