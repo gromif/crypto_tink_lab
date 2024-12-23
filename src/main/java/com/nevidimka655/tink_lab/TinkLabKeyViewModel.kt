@@ -1,6 +1,7 @@
 package com.nevidimka655.tink_lab
 
 import androidx.lifecycle.ViewModel
+import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.TinkLabKey
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
@@ -15,11 +16,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TinkLabKeyViewModel @Inject constructor(
+    @IoDispatcher
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val createLabKeyUseCase: CreateLabKeyUseCase
 ) : ViewModel() {
-    //@IoDispatcher TODO(Core)
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO
-
     private val key = MutableStateFlow(TinkLabKey())
     val keyState = key.asStateFlow()
 
