@@ -1,4 +1,4 @@
-package com.nevidimka655.tink_lab.ui
+package com.nevidimka655.tink_lab
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,8 +42,8 @@ import com.nevidimka655.tink_lab.data.AeadTypesFiles
 import com.nevidimka655.tink_lab.data.AeadTypesText
 import com.nevidimka655.tink_lab.domain.model.DataItem
 import com.nevidimka655.tink_lab.domain.model.DataType
-import com.nevidimka655.tink_lab.ui.menu.AeadTypeMenu
-import com.nevidimka655.tink_lab.ui.menu.DataTypeMenu
+import com.nevidimka655.tink_lab.menu.AeadTypeMenu
+import com.nevidimka655.tink_lab.menu.DataTypeMenu
 import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
