@@ -1,5 +1,7 @@
 package com.nevidimka655.tink_lab
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -54,7 +53,6 @@ import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
-import kotlin.text.get
 
 @Composable
 fun TinkLabKeyScreen(
@@ -88,6 +86,10 @@ fun TinkLabKeyScreen(
         )
     }
 
+    val openContract = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+
+    }
+
     Screen(
         modifier = modifier,
         keysetHash = keyset.hash.take(16),
@@ -98,6 +100,7 @@ fun TinkLabKeyScreen(
         selectedDataType = dataTypes[selectedDataTypeIndex],
         onSelectDataType = { selectedDataTypeIndex = it },
         onSelectAeadType = { aeadType = it },
+        onLoadClick = { openContract.launch(arrayOf("text/plain")) },
         keysetKey = keysetPassword,
         onChangeKeysetKey = { keysetPassword = it },
         buttonLoadText = buttonLoadString,
@@ -120,6 +123,7 @@ private fun Screen(
     selectedDataType: DataItem = dataTypes[0],
     onSelectDataType: (Int) -> Unit = {},
     onSelectAeadType: (String) -> Unit = {},
+    onLoadClick: () -> Unit = {},
     keysetKey: String = "",
     onChangeKeysetKey: (String) -> Unit = {},
     buttonLoadText: String = "Load",
@@ -190,7 +194,8 @@ private fun Screen(
                 ToolbarButton(
                     imageVector = Icons.Default.Add,
                     text = buttonLoadText,
-                    modifier = Modifier.weight(0.5f)
+                    modifier = Modifier.weight(0.5f),
+                    onClick = onLoadClick
                 )
                 ToolbarButton(
                     imageVector = Icons.Default.Save,
