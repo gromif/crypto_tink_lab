@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.nevidimka655.tink_lab.domain.model.DataItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +45,7 @@ internal fun DataTypeMenu(
     ) {
         items.forEachIndexed { i, it ->
             DropdownMenuItem(
-                text = { Text(text = it.title) },
+                text = { Text(text = stringResource(id = it.titleResId)) },
                 onClick = {
                     onSelect(i)
                     onExpandedChange(false)

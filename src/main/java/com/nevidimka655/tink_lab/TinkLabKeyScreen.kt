@@ -37,12 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.data.AeadTypesFiles
 import com.nevidimka655.tink_lab.data.AeadTypesText
 import com.nevidimka655.tink_lab.domain.model.DataItem
@@ -54,25 +56,15 @@ import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
 
+private val dataTypesList = listOf(
+    DataItem(R.string.files, DataType.Files),
+    DataItem(R.string.text, DataType.Text)
+)
+
 @Composable
-fun TinkLabKeyScreen(
-    modifier: Modifier = Modifier,
-    aeadTypeString: String = "Encryption type",
-    dataTypeString: String = "Data type",
-    keysetKeyString: String = "Keyset key",
-    dataTypeFilesString: String = "Files",
-    dataTypeTextString: String = "Text",
-    buttonLoadString: String = "Load",
-    buttonSaveString: String = "Save"
-) {
+fun TinkLabKeyScreen(modifier: Modifier = Modifier) {
     val vm: TinkLabKeyViewModel = hiltViewModel()
 
-    val dataTypes = remember {
-        listOf(
-            DataItem(dataTypeFilesString, DataType.Files),
-            DataItem(dataTypeTextString, DataType.Text)
-        )
-    }
     var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
     var keysetPassword by rememberSaveable { mutableStateOf("") }
     var aeadType by rememberSaveable { mutableStateOf("") }
@@ -81,7 +73,7 @@ fun TinkLabKeyScreen(
     LaunchedEffect(keysetPassword, aeadType) {
         if (aeadType.isNotEmpty()) vm.shuffleKeyset(
             keysetPassword = keysetPassword,
-            dataType = dataTypes[selectedDataTypeIndex].type,
+            dataType = dataTypesList[selectedDataTypeIndex].type,
             aeadType = aeadType
         )
     }
@@ -93,18 +85,13 @@ fun TinkLabKeyScreen(
     Screen(
         modifier = modifier,
         keysetHash = keyset.hash.take(16),
-        aeadTypeLabel = aeadTypeString,
-        dataTypeLabel = dataTypeString,
-        keysetKeyLabel = keysetKeyString,
-        dataTypes = dataTypes,
-        selectedDataType = dataTypes[selectedDataTypeIndex],
+        dataTypes = dataTypesList,
+        selectedDataType = dataTypesList[selectedDataTypeIndex],
         onSelectDataType = { selectedDataTypeIndex = it },
         onSelectAeadType = { aeadType = it },
         onLoadClick = { openContract.launch(arrayOf("text/plain")) },
         keysetKey = keysetPassword,
-        onChangeKeysetKey = { keysetPassword = it },
-        buttonLoadText = buttonLoadString,
-        buttonSaveText = buttonSaveString
+        onChangeKeysetKey = { keysetPassword = it }
     )
 }
 
@@ -114,20 +101,13 @@ fun TinkLabKeyScreen(
 private fun Screen(
     modifier: Modifier = Modifier,
     keysetHash: String = "keyset_hash",
-    aeadTypeLabel: String = "Encryption type",
-    dataTypeLabel: String = "Data type",
-    keysetKeyLabel: String = "Keyset key",
-    dataTypes: List<DataItem> = listOf(
-        DataItem("Files", DataType.Files), DataItem("Text", DataType.Text)
-    ),
+    dataTypes: List<DataItem> = dataTypesList,
     selectedDataType: DataItem = dataTypes[0],
     onSelectDataType: (Int) -> Unit = {},
     onSelectAeadType: (String) -> Unit = {},
     onLoadClick: () -> Unit = {},
     keysetKey: String = "",
-    onChangeKeysetKey: (String) -> Unit = {},
-    buttonLoadText: String = "Load",
-    buttonSaveText: String = "Save"
+    onChangeKeysetKey: (String) -> Unit = {}
 ) = Box(
     modifier = modifier
         .fillMaxSize()
@@ -153,8 +133,8 @@ private fun Screen(
             fun dataTypeMenu(modifier: Modifier = Modifier.fillMaxWidth()) = DataTypeMenu(
                 modifier = modifier,
                 expanded = showDataTypeMenu,
-                text = selectedDataType.title,
-                label = dataTypeLabel,
+                text = stringResource(id = selectedDataType.titleResId),
+                label = stringResource(id = R.string.lab_dataType),
                 onExpandedChange = { showDataTypeMenu = it },
                 items = dataTypes,
                 onSelect = onSelectDataType
@@ -174,7 +154,7 @@ private fun Screen(
             fun aeadTypeMenu() = AeadTypeMenu(
                 expanded = showAeadTypeMenu,
                 text = selectedAeadType,
-                label = aeadTypeLabel,
+                label = stringResource(id = R.string.encryption_type),
                 onExpandedChange = { showAeadTypeMenu = it },
                 items = aeadTypes,
                 onSelect = { selectedAeadType = it }
@@ -182,7 +162,9 @@ private fun Screen(
 
             @Composable
             fun keysetKeyField() = KeysetKeyTextField(
-                value = keysetKey, onValueChange = onChangeKeysetKey, label = keysetKeyLabel
+                value = keysetKey,
+                onValueChange = onChangeKeysetKey,
+                label = stringResource(id = R.string.lab_keySetPassword)
             )
 
             @Composable
@@ -193,13 +175,13 @@ private fun Screen(
             ) {
                 ToolbarButton(
                     imageVector = Icons.Default.Add,
-                    text = buttonLoadText,
+                    text = stringResource(id = R.string.load),
                     modifier = Modifier.weight(0.5f),
                     onClick = onLoadClick
                 )
                 ToolbarButton(
                     imageVector = Icons.Default.Save,
-                    text = buttonSaveText,
+                    text = stringResource(id = R.string.save),
                     modifier = Modifier.weight(0.5f)
                 )
             }
