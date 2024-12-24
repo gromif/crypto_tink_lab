@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
-    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val defaultDispatcher: CoroutineDispatcher,
     private val createLabKeyUseCase: CreateLabKeyUseCase
 ) : ViewModel() {
     private val key = MutableStateFlow(TinkLabKey())
