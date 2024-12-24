@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.di.tinkLab)
 
     implementation(projects.core.resources)
+    implementation(projects.core.utils)
     implementation(projects.core.tink)
     implementation(projects.di.core)
     testImplementation(libs.junit)
