@@ -3,13 +3,12 @@ package com.nevidimka655.tink_lab
 import androidx.lifecycle.ViewModel
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.tink_lab.domain.model.DataType
-import com.nevidimka655.tink_lab.domain.model.TinkLabKey
+import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetTextAeadListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -24,7 +23,7 @@ class TinkLabKeyViewModel @Inject constructor(
     getFileAeadListUseCase: GetFileAeadListUseCase,
     getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
-    private val key = MutableStateFlow(TinkLabKey())
+    private val key = MutableStateFlow(Key())
     val keyState = key.asStateFlow()
 
     val fileAeadList = getFileAeadListUseCase()
