@@ -55,6 +55,7 @@ import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
+import kotlinx.coroutines.channels.Channel
 
 private val dataTypesList = listOf(
     DataItem(R.string.files, DataType.Files),
@@ -62,7 +63,11 @@ private val dataTypesList = listOf(
 )
 
 @Composable
-fun TinkLabKeyScreen(modifier: Modifier = Modifier) {
+fun TinkLabKeyScreen(
+    modifier: Modifier = Modifier,
+    onRequestKeysetChannel: Channel<Unit>,
+    onFinish: () -> Unit
+) {
     val vm: TinkLabKeyViewModel = hiltViewModel()
 
     var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
