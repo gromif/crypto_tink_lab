@@ -45,8 +45,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
-import com.nevidimka655.tink_lab.data.AeadTypesFiles
-import com.nevidimka655.tink_lab.data.AeadTypesText
 import com.nevidimka655.tink_lab.domain.model.DataItem
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.menu.AeadTypeMenu
@@ -89,6 +87,8 @@ fun TinkLabKeyScreen(
 
     Screen(
         modifier = modifier,
+        fileAeadList = vm.fileAeadList,
+        textAeadList = vm.textAeadList,
         keysetHash = keyset.hash.take(16),
         dataTypes = dataTypesList,
         selectedDataType = dataTypesList[selectedDataTypeIndex],
@@ -105,6 +105,8 @@ fun TinkLabKeyScreen(
 @Composable
 private fun Screen(
     modifier: Modifier = Modifier,
+    fileAeadList: List<String> = listOf(),
+    textAeadList: List<String> = listOf(),
     keysetHash: String = "keyset_hash",
     dataTypes: List<DataItem> = dataTypesList,
     selectedDataType: DataItem = dataTypes[0],
@@ -148,8 +150,8 @@ private fun Screen(
             var showAeadTypeMenu by remember { mutableStateOf(false) }
             val aeadTypes = remember(selectedDataType) {
                 when (selectedDataType.type) {
-                    DataType.Files -> AeadTypesFiles
-                    DataType.Text -> AeadTypesText
+                    DataType.Files -> fileAeadList
+                    DataType.Text -> textAeadList
                 }
             }
             var selectedAeadType by rememberSaveable(selectedDataType) { mutableStateOf(aeadTypes.first()) }

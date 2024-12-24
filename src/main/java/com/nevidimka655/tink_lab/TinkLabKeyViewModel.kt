@@ -5,6 +5,8 @@ import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.TinkLabKey
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
+import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
+import com.nevidimka655.tink_lab.domain.usecase.GetTextAeadListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -18,10 +20,15 @@ import javax.inject.Inject
 class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
-    private val createLabKeyUseCase: CreateLabKeyUseCase
+    private val createLabKeyUseCase: CreateLabKeyUseCase,
+    getFileAeadListUseCase: GetFileAeadListUseCase,
+    getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
     private val key = MutableStateFlow(TinkLabKey())
     val keyState = key.asStateFlow()
+
+    val fileAeadList = getFileAeadListUseCase()
+    val textAeadList = getTextAeadListUseCase()
 
     suspend fun shuffleKeyset(
         keysetPassword: String,
