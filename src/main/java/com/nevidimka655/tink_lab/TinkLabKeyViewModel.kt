@@ -7,6 +7,7 @@ import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetTextAeadListUseCase
+import com.nevidimka655.tink_lab.domain.usecase.SaveKeyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
     private val createLabKeyUseCase: CreateLabKeyUseCase,
+    private val saveKeyUseCase: SaveKeyUseCase,
     getFileAeadListUseCase: GetFileAeadListUseCase,
     getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
