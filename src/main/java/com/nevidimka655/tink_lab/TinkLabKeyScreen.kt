@@ -54,6 +54,8 @@ import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
 import kotlinx.coroutines.channels.Channel
+import kotlin.math.abs
+import kotlin.random.Random
 
 private val dataTypesList = listOf(
     DataItem(R.string.files, DataType.Files),
@@ -85,6 +87,10 @@ fun TinkLabKeyScreen(
 
     }
 
+    val saveContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { if (it != null) vm.save(uri = it) }
+
     Screen(
         modifier = modifier,
         fileAeadList = vm.fileAeadList,
@@ -95,6 +101,7 @@ fun TinkLabKeyScreen(
         onSelectDataType = { selectedDataTypeIndex = it },
         onSelectAeadType = { aeadType = it },
         onLoadClick = { openContract.launch(arrayOf("text/plain")) },
+        onSaveClick = { saveContract.launch("ac_key_${abs(Random.nextInt())}.txt") },
         keysetKey = keysetPassword,
         onChangeKeysetKey = { keysetPassword = it }
     )
@@ -113,6 +120,7 @@ private fun Screen(
     onSelectDataType: (Int) -> Unit = {},
     onSelectAeadType: (String) -> Unit = {},
     onLoadClick: () -> Unit = {},
+    onSaveClick: () -> Unit = {},
     keysetKey: String = "",
     onChangeKeysetKey: (String) -> Unit = {}
 ) = Box(
@@ -189,7 +197,8 @@ private fun Screen(
                 ToolbarButton(
                     imageVector = Icons.Default.Save,
                     text = stringResource(id = R.string.save),
-                    modifier = Modifier.weight(0.5f)
+                    modifier = Modifier.weight(0.5f),
+                    onClick = onSaveClick
                 )
             }
 
