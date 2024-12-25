@@ -82,7 +82,7 @@ fun TinkLabKeyScreen(
         onRequestKeysetChannel.collectLatest {
             val key: Key
             if (isLoadMode) {
-                val loadedKey = vm.load().await()
+                val loadedKey = vm.load()
                 if (loadedKey == null) {
                     keysetPasswordErrorState = true
                     Toast.makeText(

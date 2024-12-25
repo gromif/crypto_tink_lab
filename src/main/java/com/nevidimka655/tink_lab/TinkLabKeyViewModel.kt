@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val KEYSET_PASSWORD = "kp"
@@ -61,7 +62,7 @@ class TinkLabKeyViewModel @Inject constructor(
         )
     }
 
-    fun load() = viewModelScope.async(defaultDispatcher) {
+    suspend fun load() = withContext(defaultDispatcher) {
         val result = loadKeyUseCase(
             uriString = keysetUriToLoadState.value,
             keysetPassword = keysetPasswordState.value
