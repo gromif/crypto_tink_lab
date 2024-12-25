@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val KEYSET_PASSWORD = "kp"
+private const val KEYSET_URI_LOAD = "kp_uri_load"
 
 @HiltViewModel
 class TinkLabKeyViewModel @Inject constructor(
@@ -43,8 +44,8 @@ class TinkLabKeyViewModel @Inject constructor(
     private val key = MutableStateFlow(Key())
     val keyState = key.asStateFlow()
 
+    val keysetUriToLoadState = state.getStateFlow(KEYSET_URI_LOAD, "")
     val keysetPasswordState = state.getStateFlow(KEYSET_PASSWORD, "")
-    var keysetUriToLoadState by mutableStateOf(Uri.EMPTY)
     var keysetPasswordErrorState by mutableStateOf(false)
 
     val fileAeadList = getFileAeadListUseCase()
@@ -53,14 +54,14 @@ class TinkLabKeyViewModel @Inject constructor(
     fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
         saveKeyUseCase(
             key = key.value,
-            uriString = uriToStringMapper(uri),
+            uriString = keysetUriToLoadState.value,
             keysetPassword = keysetPasswordState.value
         )
     }
 
     fun load() = viewModelScope.launch(defaultDispatcher) {
         val result = loadKeyUseCase(
-            uriString = uriToStringMapper(keysetUriToLoadState),
+            uriString = keysetUriToLoadState.value,
             keysetPassword = keysetPasswordState.value
         )
         if (result is KeyReader.Result.Success) {
@@ -82,6 +83,10 @@ class TinkLabKeyViewModel @Inject constructor(
 
     fun setKeysetPassword(keysetPassword: String) {
         state[KEYSET_PASSWORD] = keysetPassword
+    }
+
+    fun setKeysetUriLoad(uri: Uri) {
+        state[KEYSET_URI_LOAD] = uriToStringMapper(uri)
     }
 
 }

@@ -1,6 +1,5 @@
 package com.nevidimka655.tink_lab
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -81,7 +80,8 @@ fun TinkLabKeyScreen(
     val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
     var aeadType by rememberSaveable { mutableStateOf("") }
     val keyset by vm.keyState.collectAsStateWithLifecycle()
-    val isLoadingKey = remember(vm.keysetUriToLoadState) { vm.keysetUriToLoadState != Uri.EMPTY }
+    val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
+    val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
 
     LaunchedEffect(Unit) {
         onRequestKeysetChannel.collectLatest { vm.load() }
@@ -102,7 +102,7 @@ fun TinkLabKeyScreen(
     }
 
     val openContract = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        if (it != null) vm.keysetUriToLoadState = it
+        if (it != null) vm.setKeysetUriLoad(it)
     }
 
     val saveContract = rememberLauncherForActivityResult(
@@ -113,7 +113,7 @@ fun TinkLabKeyScreen(
         modifier = modifier,
         fileAeadList = vm.fileAeadList,
         textAeadList = vm.textAeadList,
-        isLoadingMode = isLoadingKey,
+        isLoadingMode = isLoadMode,
         isWrongPassword = vm.keysetPasswordErrorState,
         keysetHash = keyset.hash.take(16),
         dataTypes = dataTypesList,
