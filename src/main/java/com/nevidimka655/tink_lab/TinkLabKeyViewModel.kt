@@ -54,7 +54,7 @@ class TinkLabKeyViewModel @Inject constructor(
     fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
         saveKeyUseCase(
             key = key.value,
-            uriString = keysetUriToLoadState.value,
+            uriString = uriToStringMapper(uri),
             keysetPassword = keysetPasswordState.value
         )
     }
