@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 @Composable
 internal fun AeadTypeMenu(
     expanded: Boolean = false,
+    enabled: Boolean = true,
     text: String = "Field",
     label: String = "Label",
     items: List<String>,
@@ -27,6 +28,7 @@ internal fun AeadTypeMenu(
     OutlinedTextField(
         value = text,
         onValueChange = {},
+        enabled = enabled,
         readOnly = true,
         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
         label = { Text(text = label) },

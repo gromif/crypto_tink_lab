@@ -20,6 +20,7 @@ import com.nevidimka655.tink_lab.domain.model.DataItem
 internal fun DataTypeMenu(
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
+    enabled: Boolean = true,
     text: String = "Field",
     label: String = "Label",
     items: List<DataItem>,
@@ -32,6 +33,7 @@ internal fun DataTypeMenu(
     OutlinedTextField(
         value = text,
         onValueChange = {},
+        enabled = enabled,
         readOnly = true,
         leadingIcon = { Icon(imageVector = Icons.Outlined.FileOpen, null) },
         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },

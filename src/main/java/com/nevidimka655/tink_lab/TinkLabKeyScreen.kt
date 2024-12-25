@@ -1,5 +1,7 @@
 package com.nevidimka655.tink_lab
 
+import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -53,9 +56,12 @@ import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.abs
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 private val dataTypesList = listOf(
     DataItem(R.string.files, DataType.Files),
@@ -65,15 +71,28 @@ private val dataTypesList = listOf(
 @Composable
 fun TinkLabKeyScreen(
     modifier: Modifier = Modifier,
-    onRequestKeysetChannel: Channel<Unit>,
+    onRequestKeysetChannel: Flow<Unit>,
     onFinish: () -> Unit
 ) {
     val vm: TinkLabKeyViewModel = hiltViewModel()
+    val context = LocalContext.current
 
     var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
     var keysetPassword by rememberSaveable { mutableStateOf("") }
     var aeadType by rememberSaveable { mutableStateOf("") }
     val keyset by vm.keyState.collectAsStateWithLifecycle()
+    val isLoadingKey = remember(vm.keysetUriToLoadState) { vm.keysetUriToLoadState != Uri.EMPTY }
+
+    LaunchedEffect(Unit) {
+        onRequestKeysetChannel.collectLatest { vm.load(keysetPassword = keysetPassword) }
+    }
+
+    if (vm.keysetPasswordErrorState) LaunchedEffect(Unit) {
+        Toast.makeText(context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT)
+            .show()
+        delay(3.seconds)
+        vm.keysetPasswordErrorState = false
+    }
 
     LaunchedEffect(keysetPassword, aeadType) {
         if (aeadType.isNotEmpty()) vm.shuffleKeyset(
@@ -84,7 +103,7 @@ fun TinkLabKeyScreen(
     }
 
     val openContract = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-
+        if (it != null) vm.keysetUriToLoadState = it
     }
 
     val saveContract = rememberLauncherForActivityResult(
@@ -95,6 +114,8 @@ fun TinkLabKeyScreen(
         modifier = modifier,
         fileAeadList = vm.fileAeadList,
         textAeadList = vm.textAeadList,
+        isLoadingMode = isLoadingKey,
+        isWrongPassword = vm.keysetPasswordErrorState,
         keysetHash = keyset.hash.take(16),
         dataTypes = dataTypesList,
         selectedDataType = dataTypesList[selectedDataTypeIndex],
@@ -114,6 +135,8 @@ private fun Screen(
     modifier: Modifier = Modifier,
     fileAeadList: List<String> = listOf(),
     textAeadList: List<String> = listOf(),
+    isLoadingMode: Boolean = false,
+    isWrongPassword: Boolean = false,
     keysetHash: String = "keyset_hash",
     dataTypes: List<DataItem> = dataTypesList,
     selectedDataType: DataItem = dataTypes[0],
@@ -148,9 +171,10 @@ private fun Screen(
             fun dataTypeMenu(modifier: Modifier = Modifier.fillMaxWidth()) = DataTypeMenu(
                 modifier = modifier,
                 expanded = showDataTypeMenu,
+                enabled = !isLoadingMode,
                 text = stringResource(id = selectedDataType.titleResId),
                 label = stringResource(id = R.string.lab_dataType),
-                onExpandedChange = { showDataTypeMenu = it },
+                onExpandedChange = { if (!isLoadingMode) showDataTypeMenu = it },
                 items = dataTypes,
                 onSelect = onSelectDataType
             )
@@ -168,9 +192,10 @@ private fun Screen(
             @Composable
             fun aeadTypeMenu() = AeadTypeMenu(
                 expanded = showAeadTypeMenu,
+                enabled = !isLoadingMode,
                 text = selectedAeadType,
                 label = stringResource(id = R.string.encryption_type),
-                onExpandedChange = { showAeadTypeMenu = it },
+                onExpandedChange = { if (!isLoadingMode) showAeadTypeMenu = it },
                 items = aeadTypes,
                 onSelect = { selectedAeadType = it }
             )
@@ -179,7 +204,8 @@ private fun Screen(
             fun keysetKeyField() = KeysetKeyTextField(
                 value = keysetKey,
                 onValueChange = onChangeKeysetKey,
-                label = stringResource(id = R.string.lab_keySetPassword)
+                label = stringResource(id = R.string.lab_keySetPassword),
+                isError = isWrongPassword
             )
 
             @Composable
@@ -209,8 +235,10 @@ private fun Screen(
                 keysetKeyField()
                 dataTypeMenu()
                 aeadTypeMenu()
-                toolbar()
-                keysetInfo()
+                if (!isLoadingMode) {
+                    toolbar()
+                    keysetInfo()
+                }
             } else {
                 Row(horizontalArrangement = defaultHorizontalArrangement) {
                     val horizontalAlignment = Alignment.CenterHorizontally
@@ -228,12 +256,12 @@ private fun Screen(
                         horizontalAlignment = horizontalAlignment
                     ) {
                         aeadTypeMenu()
-                        toolbar(
+                        if (!isLoadingMode) toolbar(
                             modifier = Modifier.height(TextFieldDefaults.MinHeight)
                         )
                     }
                 }
-                keysetInfo()
+                if (!isLoadingMode) keysetInfo()
             }
         }
     }
@@ -244,6 +272,7 @@ private fun KeysetKeyTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    isError: Boolean
 ) {
     var passwordToggleState by remember { mutableStateOf(false) }
     OutlinedTextField(
@@ -271,6 +300,7 @@ private fun KeysetKeyTextField(
             PasswordVisualTransformation()
         } else VisualTransformation.None,
         singleLine = true,
+        isError = isError,
         modifier = Modifier.fillMaxWidth()
     )
 }

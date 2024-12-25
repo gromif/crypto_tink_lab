@@ -1,6 +1,9 @@
 package com.nevidimka655.tink_lab
 
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
@@ -10,7 +13,9 @@ import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetTextAeadListUseCase
+import com.nevidimka655.tink_lab.domain.usecase.LoadKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.SaveKeyUseCase
+import com.nevidimka655.tink_lab.domain.util.KeyReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,12 +31,16 @@ class TinkLabKeyViewModel @Inject constructor(
     private val defaultDispatcher: CoroutineDispatcher,
     private val createLabKeyUseCase: CreateLabKeyUseCase,
     private val saveKeyUseCase: SaveKeyUseCase,
+    private val loadKeyUseCase: LoadKeyUseCase,
     private val uriToStringMapper: Mapper<Uri, String>,
     getFileAeadListUseCase: GetFileAeadListUseCase,
     getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
     private val key = MutableStateFlow(Key())
     val keyState = key.asStateFlow()
+
+    var keysetUriToLoadState by mutableStateOf(Uri.EMPTY)
+    var keysetPasswordErrorState by mutableStateOf(false)
 
     val fileAeadList = getFileAeadListUseCase()
     val textAeadList = getTextAeadListUseCase()
@@ -41,6 +50,16 @@ class TinkLabKeyViewModel @Inject constructor(
             key = key.value,
             uriString = uriToStringMapper(uri)
         )
+    }
+
+    fun load(keysetPassword: String) = viewModelScope.launch(defaultDispatcher) {
+        val result = loadKeyUseCase(
+            uriString = uriToStringMapper(keysetUriToLoadState),
+            keysetPassword = keysetPassword
+        )
+        if (result is KeyReader.Result.Success) {
+            key.update { result.key }
+        } else keysetPasswordErrorState = true
     }
 
     suspend fun shuffleKeyset(
