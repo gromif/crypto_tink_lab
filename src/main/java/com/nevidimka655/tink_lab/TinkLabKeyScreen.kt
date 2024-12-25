@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.domain.model.DataItem
 import com.nevidimka655.tink_lab.domain.model.DataType
+import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.menu.AeadTypeMenu
 import com.nevidimka655.tink_lab.menu.DataTypeMenu
 import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
@@ -64,7 +65,7 @@ import kotlin.time.Duration.Companion.seconds
 fun TinkLabKeyScreen(
     modifier: Modifier = Modifier,
     onRequestKeysetChannel: Flow<Unit>,
-    onFinish: () -> Unit
+    navigateToTextMode: (keyset: String) -> Unit
 ) {
     val vm: TinkLabKeyViewModel = hiltViewModel()
     val context = LocalContext.current
@@ -78,14 +79,23 @@ fun TinkLabKeyScreen(
 
     LaunchedEffect(Unit) {
         onRequestKeysetChannel.collectLatest {
-            val loadedKey = vm.load().await()
-            if (loadedKey != null) return@collectLatest
-            keysetPasswordErrorState = true
-            Toast.makeText(
-                context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT
-            ).show()
-            delay(3.seconds)
-            keysetPasswordErrorState = false
+            val key: Key
+            if (isLoadMode) {
+                val loadedKey = vm.load().await()
+                if (loadedKey == null) {
+                    keysetPasswordErrorState = true
+                    Toast.makeText(
+                        context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT
+                    ).show()
+                    delay(3.seconds)
+                    keysetPasswordErrorState = false
+                    return@collectLatest
+                } else key = loadedKey
+            } else key = vm.createKey()
+            when (key.dataType) {
+                DataType.Files -> TODO()
+                DataType.Text -> navigateToTextMode(key.rawKeyset)
+            }
         }
     }
 
