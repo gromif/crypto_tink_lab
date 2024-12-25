@@ -19,6 +19,7 @@ import com.nevidimka655.tink_lab.domain.usecase.SaveKeyUseCase
 import com.nevidimka655.tink_lab.domain.util.KeyReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -46,7 +47,6 @@ class TinkLabKeyViewModel @Inject constructor(
 
     val keysetUriToLoadState = state.getStateFlow(KEYSET_URI_LOAD, "")
     val keysetPasswordState = state.getStateFlow(KEYSET_PASSWORD, "")
-    var keysetPasswordErrorState by mutableStateOf(false)
 
     val fileAeadList = getFileAeadListUseCase()
     val textAeadList = getTextAeadListUseCase()
@@ -59,14 +59,15 @@ class TinkLabKeyViewModel @Inject constructor(
         )
     }
 
-    fun load() = viewModelScope.launch(defaultDispatcher) {
+    fun load() = viewModelScope.async(defaultDispatcher) {
         val result = loadKeyUseCase(
             uriString = keysetUriToLoadState.value,
             keysetPassword = keysetPasswordState.value
         )
         if (result is KeyReader.Result.Success) {
             key.update { result.key }
-        } else keysetPasswordErrorState = true
+            true
+        } else false
     }
 
     suspend fun shuffleKeyset(

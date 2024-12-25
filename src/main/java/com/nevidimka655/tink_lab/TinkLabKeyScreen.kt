@@ -78,20 +78,23 @@ fun TinkLabKeyScreen(
 
     var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
     val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
+    var keysetPasswordErrorState by remember { mutableStateOf(false) }
     var aeadType by rememberSaveable { mutableStateOf("") }
     val keyset by vm.keyState.collectAsStateWithLifecycle()
     val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
     val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
 
     LaunchedEffect(Unit) {
-        onRequestKeysetChannel.collectLatest { vm.load() }
-    }
-
-    if (vm.keysetPasswordErrorState) LaunchedEffect(Unit) {
-        Toast.makeText(context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT)
-            .show()
-        delay(3.seconds)
-        vm.keysetPasswordErrorState = false
+        onRequestKeysetChannel.collectLatest {
+            val loadResult = vm.load().await()
+            if (loadResult) return@collectLatest
+            keysetPasswordErrorState = true
+            Toast.makeText(
+                context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT
+            ).show()
+            delay(3.seconds)
+            keysetPasswordErrorState = false
+        }
     }
 
     LaunchedEffect(aeadType) {
@@ -114,7 +117,7 @@ fun TinkLabKeyScreen(
         fileAeadList = vm.fileAeadList,
         textAeadList = vm.textAeadList,
         isLoadingMode = isLoadMode,
-        isWrongPassword = vm.keysetPasswordErrorState,
+        isWrongPassword = keysetPasswordErrorState,
         keysetHash = keyset.hash.take(16),
         dataTypes = dataTypesList,
         selectedDataType = dataTypesList[selectedDataTypeIndex],
