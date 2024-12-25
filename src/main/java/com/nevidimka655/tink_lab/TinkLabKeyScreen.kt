@@ -94,7 +94,7 @@ fun TinkLabKeyScreen(
         vm.keysetPasswordErrorState = false
     }
 
-    LaunchedEffect(keysetPassword, aeadType) {
+    LaunchedEffect(aeadType) {
         if (aeadType.isNotEmpty()) vm.shuffleKeyset(
             dataType = dataTypesList[selectedDataTypeIndex].type,
             aeadType = aeadType
