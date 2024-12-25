@@ -26,6 +26,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val KEYSET_PASSWORD = "kp"
+
 @HiltViewModel
 class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
@@ -36,29 +38,30 @@ class TinkLabKeyViewModel @Inject constructor(
     private val loadKeyUseCase: LoadKeyUseCase,
     private val uriToStringMapper: Mapper<Uri, String>,
     getFileAeadListUseCase: GetFileAeadListUseCase,
-    getTextAeadListUseCase: GetTextAeadListUseCase,
+    getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
     private val key = MutableStateFlow(Key())
     val keyState = key.asStateFlow()
 
+    val keysetPasswordState = state.getStateFlow(KEYSET_PASSWORD, "")
     var keysetUriToLoadState by mutableStateOf(Uri.EMPTY)
     var keysetPasswordErrorState by mutableStateOf(false)
 
     val fileAeadList = getFileAeadListUseCase()
     val textAeadList = getTextAeadListUseCase()
 
-    fun save(uri: Uri, keysetPassword: String) = viewModelScope.launch(defaultDispatcher) {
+    fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
         saveKeyUseCase(
             key = key.value,
             uriString = uriToStringMapper(uri),
-            keysetPassword = keysetPassword
+            keysetPassword = keysetPasswordState.value
         )
     }
 
-    fun load(keysetPassword: String) = viewModelScope.launch(defaultDispatcher) {
+    fun load() = viewModelScope.launch(defaultDispatcher) {
         val result = loadKeyUseCase(
             uriString = uriToStringMapper(keysetUriToLoadState),
-            keysetPassword = keysetPassword
+            keysetPassword = keysetPasswordState.value
         )
         if (result is KeyReader.Result.Success) {
             key.update { result.key }
@@ -66,16 +69,19 @@ class TinkLabKeyViewModel @Inject constructor(
     }
 
     suspend fun shuffleKeyset(
-        keysetPassword: String,
         dataType: DataType,
         aeadType: String
     ) = withContext(defaultDispatcher) {
         val newTinkLabKey = createLabKeyUseCase(
-            keysetPassword = keysetPassword,
+            keysetPassword = keysetPasswordState.value,
             dataType = dataType,
             aeadType = aeadType
         )
         key.update { newTinkLabKey }
+    }
+
+    fun setKeysetPassword(keysetPassword: String) {
+        state[KEYSET_PASSWORD] = keysetPassword
     }
 
 }

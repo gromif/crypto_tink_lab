@@ -78,13 +78,13 @@ fun TinkLabKeyScreen(
     val context = LocalContext.current
 
     var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
-    var keysetPassword by rememberSaveable { mutableStateOf("") }
+    val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
     var aeadType by rememberSaveable { mutableStateOf("") }
     val keyset by vm.keyState.collectAsStateWithLifecycle()
     val isLoadingKey = remember(vm.keysetUriToLoadState) { vm.keysetUriToLoadState != Uri.EMPTY }
 
     LaunchedEffect(Unit) {
-        onRequestKeysetChannel.collectLatest { vm.load(keysetPassword = keysetPassword) }
+        onRequestKeysetChannel.collectLatest { vm.load() }
     }
 
     if (vm.keysetPasswordErrorState) LaunchedEffect(Unit) {
@@ -96,7 +96,6 @@ fun TinkLabKeyScreen(
 
     LaunchedEffect(keysetPassword, aeadType) {
         if (aeadType.isNotEmpty()) vm.shuffleKeyset(
-            keysetPassword = keysetPassword,
             dataType = dataTypesList[selectedDataTypeIndex].type,
             aeadType = aeadType
         )
@@ -108,7 +107,7 @@ fun TinkLabKeyScreen(
 
     val saveContract = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
-    ) { if (it != null) vm.save(uri = it, keysetPassword = keysetPassword) }
+    ) { if (it != null) vm.save(uri = it) }
 
     Screen(
         modifier = modifier,
@@ -124,7 +123,7 @@ fun TinkLabKeyScreen(
         onLoadClick = { openContract.launch(arrayOf("text/plain")) },
         onSaveClick = { saveContract.launch("ac_key_${abs(Random.nextInt())}.txt") },
         keysetKey = keysetPassword,
-        onChangeKeysetKey = { keysetPassword = it }
+        onChangeKeysetKey = { vm.setKeysetPassword(it) }
     )
 }
 
