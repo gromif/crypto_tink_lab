@@ -108,7 +108,7 @@ fun TinkLabKeyScreen(
 
     val saveContract = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
-    ) { if (it != null) vm.save(uri = it) }
+    ) { if (it != null) vm.save(uri = it, keysetPassword = keysetPassword) }
 
     Screen(
         modifier = modifier,

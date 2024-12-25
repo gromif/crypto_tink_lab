@@ -45,10 +45,11 @@ class TinkLabKeyViewModel @Inject constructor(
     val fileAeadList = getFileAeadListUseCase()
     val textAeadList = getTextAeadListUseCase()
 
-    fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
+    fun save(uri: Uri, keysetPassword: String) = viewModelScope.launch(defaultDispatcher) {
         saveKeyUseCase(
             key = key.value,
-            uriString = uriToStringMapper(uri)
+            uriString = uriToStringMapper(uri),
+            keysetPassword = keysetPassword
         )
     }
 
