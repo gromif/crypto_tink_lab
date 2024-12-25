@@ -65,7 +65,8 @@ import kotlin.time.Duration.Companion.seconds
 fun TinkLabKeyScreen(
     modifier: Modifier = Modifier,
     onRequestKeysetChannel: Flow<Unit>,
-    navigateToTextMode: (keyset: String) -> Unit
+    navigateToTextMode: (keyset: String) -> Unit,
+    navigateToFilesMode: (keyset: String) -> Unit
 ) {
     val vm: TinkLabKeyViewModel = hiltViewModel()
     val context = LocalContext.current
@@ -93,7 +94,7 @@ fun TinkLabKeyScreen(
                 } else key = loadedKey
             } else key = vm.createKey()
             when (key.dataType) {
-                DataType.Files -> TODO()
+                DataType.Files -> navigateToFilesMode(key.rawKeyset)
                 DataType.Text -> navigateToTextMode(key.rawKeyset)
             }
         }
