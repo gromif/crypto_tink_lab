@@ -74,11 +74,7 @@ class TinkLabKeyViewModel @Inject constructor(
         dataType: DataType,
         aeadType: String
     ) = withContext(defaultDispatcher) {
-        val newTinkLabKey = createLabKeyUseCase(
-            keysetPassword = keysetPasswordState.value,
-            dataType = dataType,
-            aeadType = aeadType
-        )
+        val newTinkLabKey = createLabKeyUseCase(dataType = dataType, aeadType = aeadType)
         key.update { newTinkLabKey }
     }
 
