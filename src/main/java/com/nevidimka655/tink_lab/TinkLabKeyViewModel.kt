@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.domain.model.DataType
-import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetTextAeadListUseCase
@@ -17,15 +16,16 @@ import com.nevidimka655.tink_lab.domain.util.KeyReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val KEYSET_PASSWORD = "kp"
 private const val KEYSET_URI_LOAD = "kp_uri_load"
+private const val DATA_TYPE = "data_type"
+private const val AEAD_TYPE = "aead_type"
 
 @HiltViewModel
 class TinkLabKeyViewModel @Inject constructor(
@@ -39,18 +39,23 @@ class TinkLabKeyViewModel @Inject constructor(
     getFileAeadListUseCase: GetFileAeadListUseCase,
     getTextAeadListUseCase: GetTextAeadListUseCase
 ) : ViewModel() {
-    private val key = MutableStateFlow(Key())
-    val keyState = key.asStateFlow()
+    val fileAeadList = getFileAeadListUseCase()
+    val textAeadList = getTextAeadListUseCase()
+
+    val dataTypeState = state.getStateFlow(DATA_TYPE, 0).map { DataType.entries[it] }
+    val aeadTypeState = state.getStateFlow(AEAD_TYPE, fileAeadList[0])
+    private val keysetHandleFlow = dataTypeState.combine(aeadTypeState) { dataType, aeadType ->
+        createLabKeyUseCase(dataType = dataType, aeadType = aeadType.uppercase())
+    }
 
     val keysetUriToLoadState = state.getStateFlow(KEYSET_URI_LOAD, "")
     val keysetPasswordState = state.getStateFlow(KEYSET_PASSWORD, "")
 
-    val fileAeadList = getFileAeadListUseCase()
-    val textAeadList = getTextAeadListUseCase()
+    suspend fun createKey() = keysetHandleFlow.first()
 
     fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
         saveKeyUseCase(
-            key = key.value,
+            key = createKey(),
             uriString = uriToStringMapper(uri),
             keysetPassword = keysetPasswordState.value
         )
@@ -61,23 +66,12 @@ class TinkLabKeyViewModel @Inject constructor(
             uriString = keysetUriToLoadState.value,
             keysetPassword = keysetPasswordState.value
         )
-        if (result is KeyReader.Result.Success) {
-            key.update { result.key }
-            true
-        } else false
+        if (result is KeyReader.Result.Success) result.key else null
     }
 
-    suspend fun newKeyset(dataType: DataType, aeadType: String) = withContext(defaultDispatcher) {
-        val newTinkLabKey = createLabKeyUseCase(dataType = dataType, aeadType = aeadType)
-        key.update { newTinkLabKey }
-    }
-
-    fun setKeysetPassword(keysetPassword: String) {
-        state[KEYSET_PASSWORD] = keysetPassword
-    }
-
-    fun setKeysetUriLoad(uri: Uri) {
-        state[KEYSET_URI_LOAD] = uriToStringMapper(uri)
-    }
+    fun setDataType(dataType: DataType) = state.set(DATA_TYPE, dataType.ordinal)
+    fun setAeadType(type: String) = state.set(AEAD_TYPE, type)
+    fun setKeysetPassword(keysetPassword: String) = state.set(KEYSET_PASSWORD, keysetPassword)
+    fun setKeysetUriLoad(uri: Uri) = state.set(KEYSET_URI_LOAD, uriToStringMapper(uri))
 
 }

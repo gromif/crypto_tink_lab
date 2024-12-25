@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.nevidimka655.tink_lab.domain.model.DataItem
+import com.nevidimka655.tink_lab.domain.model.DataType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,7 +26,7 @@ internal fun DataTypeMenu(
     label: String = "Label",
     items: List<DataItem>,
     onExpandedChange: (Boolean) -> Unit = {},
-    onSelect: (Int) -> Unit = {},
+    onSelect: (DataType) -> Unit = {},
 ) = ExposedDropdownMenuBox(
     expanded = expanded,
     onExpandedChange = onExpandedChange
@@ -45,11 +46,11 @@ internal fun DataTypeMenu(
         expanded = expanded,
         onDismissRequest = { onExpandedChange(false) }
     ) {
-        items.forEachIndexed { i, it ->
+        items.forEach {
             DropdownMenuItem(
                 text = { Text(text = stringResource(id = it.titleResId)) },
                 onClick = {
-                    onSelect(i)
+                    onSelect(it.type)
                     onExpandedChange(false)
                 }
             )

@@ -30,10 +30,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,11 +60,6 @@ import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-private val dataTypesList = listOf(
-    DataItem(R.string.files, DataType.Files),
-    DataItem(R.string.text, DataType.Text)
-)
-
 @Composable
 fun TinkLabKeyScreen(
     modifier: Modifier = Modifier,
@@ -76,17 +69,17 @@ fun TinkLabKeyScreen(
     val vm: TinkLabKeyViewModel = hiltViewModel()
     val context = LocalContext.current
 
-    var selectedDataTypeIndex by rememberSaveable { mutableIntStateOf(0) }
+    val dataType by vm.dataTypeState.collectAsStateWithLifecycle(DataType.Files)
+    val aeadType by vm.aeadTypeState.collectAsStateWithLifecycle()
     val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
     var keysetPasswordErrorState by remember { mutableStateOf(false) }
-    var aeadType by rememberSaveable { mutableStateOf("") }
     val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
     val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
 
     LaunchedEffect(Unit) {
         onRequestKeysetChannel.collectLatest {
-            val loadResult = vm.load().await()
-            if (loadResult) return@collectLatest
+            val loadedKey = vm.load().await()
+            if (loadedKey != null) return@collectLatest
             keysetPasswordErrorState = true
             Toast.makeText(
                 context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT
@@ -94,13 +87,6 @@ fun TinkLabKeyScreen(
             delay(3.seconds)
             keysetPasswordErrorState = false
         }
-    }
-
-    LaunchedEffect(aeadType) {
-        if (aeadType.isNotEmpty()) vm.newKeyset(
-            dataType = dataTypesList[selectedDataTypeIndex].type,
-            aeadType = aeadType
-        )
     }
 
     val openContract = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
@@ -117,10 +103,10 @@ fun TinkLabKeyScreen(
         textAeadList = vm.textAeadList,
         isLoadingMode = isLoadMode,
         isWrongPassword = keysetPasswordErrorState,
-        dataTypes = dataTypesList,
-        selectedDataType = dataTypesList[selectedDataTypeIndex],
-        onSelectDataType = { selectedDataTypeIndex = it },
-        onSelectAeadType = { aeadType = it },
+        dataTypeIndex = dataType.ordinal,
+        aeadType = aeadType,
+        onSelectDataType = { vm.setDataType(it) },
+        onSelectAeadType = { vm.setAeadType(it) },
         onLoadClick = { openContract.launch(arrayOf("text/plain")) },
         onSaveClick = { saveContract.launch("ac_key_${abs(Random.nextInt())}.txt") },
         keysetKey = keysetPassword,
@@ -137,9 +123,12 @@ private fun Screen(
     textAeadList: List<String> = listOf(),
     isLoadingMode: Boolean = false,
     isWrongPassword: Boolean = false,
-    dataTypes: List<DataItem> = dataTypesList,
-    selectedDataType: DataItem = dataTypes[0],
-    onSelectDataType: (Int) -> Unit = {},
+    dataTypes: List<DataItem> = listOf(
+        DataItem(R.string.files, DataType.Files), DataItem(R.string.text, DataType.Text)
+    ),
+    dataTypeIndex: Int = 0,
+    aeadType: String = "TEST_AEAD_TYPE",
+    onSelectDataType: (DataType) -> Unit = {},
     onSelectAeadType: (String) -> Unit = {},
     onLoadClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
@@ -151,6 +140,7 @@ private fun Screen(
         .verticalScroll(rememberScrollState()),
     contentAlignment = Alignment.Center
 ) {
+    val dataType = remember(dataTypeIndex) { dataTypes[dataTypeIndex] }
     ElevatedCard {
         val localWindowWidth = LocalWindowWidth.current
         val defaultVerticalArrangement = Arrangement.spacedBy(
@@ -171,7 +161,7 @@ private fun Screen(
                 modifier = modifier,
                 expanded = showDataTypeMenu,
                 enabled = !isLoadingMode,
-                text = stringResource(id = selectedDataType.titleResId),
+                text = stringResource(id = dataType.titleResId),
                 label = stringResource(id = R.string.lab_dataType),
                 onExpandedChange = { if (!isLoadingMode) showDataTypeMenu = it },
                 items = dataTypes,
@@ -179,24 +169,22 @@ private fun Screen(
             )
 
             var showAeadTypeMenu by remember { mutableStateOf(false) }
-            val aeadTypes = remember(selectedDataType) {
-                when (selectedDataType.type) {
+            val aeadTypes = remember(dataType) {
+                when (dataType.type) {
                     DataType.Files -> fileAeadList
                     DataType.Text -> textAeadList
                 }
             }
-            var selectedAeadType by rememberSaveable(selectedDataType) { mutableStateOf(aeadTypes.first()) }
-            LaunchedEffect(selectedAeadType) { onSelectAeadType(selectedAeadType.uppercase()) }
 
             @Composable
             fun aeadTypeMenu() = AeadTypeMenu(
                 expanded = showAeadTypeMenu,
                 enabled = !isLoadingMode,
-                text = selectedAeadType,
+                text = aeadType,
                 label = stringResource(id = R.string.encryption_type),
                 onExpandedChange = { if (!isLoadingMode) showAeadTypeMenu = it },
                 items = aeadTypes,
-                onSelect = { selectedAeadType = it }
+                onSelect = onSelectAeadType
             )
 
             @Composable
