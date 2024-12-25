@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
@@ -29,12 +30,13 @@ import javax.inject.Inject
 class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
+    private val state: SavedStateHandle,
     private val createLabKeyUseCase: CreateLabKeyUseCase,
     private val saveKeyUseCase: SaveKeyUseCase,
     private val loadKeyUseCase: LoadKeyUseCase,
     private val uriToStringMapper: Mapper<Uri, String>,
     getFileAeadListUseCase: GetFileAeadListUseCase,
-    getTextAeadListUseCase: GetTextAeadListUseCase
+    getTextAeadListUseCase: GetTextAeadListUseCase,
 ) : ViewModel() {
     private val key = MutableStateFlow(Key())
     val keyState = key.asStateFlow()
