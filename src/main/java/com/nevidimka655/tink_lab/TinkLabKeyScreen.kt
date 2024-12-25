@@ -80,7 +80,6 @@ fun TinkLabKeyScreen(
     val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
     var keysetPasswordErrorState by remember { mutableStateOf(false) }
     var aeadType by rememberSaveable { mutableStateOf("") }
-    val keyset by vm.keyState.collectAsStateWithLifecycle()
     val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
     val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
 
@@ -98,7 +97,7 @@ fun TinkLabKeyScreen(
     }
 
     LaunchedEffect(aeadType) {
-        if (aeadType.isNotEmpty()) vm.shuffleKeyset(
+        if (aeadType.isNotEmpty()) vm.newKeyset(
             dataType = dataTypesList[selectedDataTypeIndex].type,
             aeadType = aeadType
         )
@@ -118,7 +117,6 @@ fun TinkLabKeyScreen(
         textAeadList = vm.textAeadList,
         isLoadingMode = isLoadMode,
         isWrongPassword = keysetPasswordErrorState,
-        keysetHash = keyset.hash.take(16),
         dataTypes = dataTypesList,
         selectedDataType = dataTypesList[selectedDataTypeIndex],
         onSelectDataType = { selectedDataTypeIndex = it },
@@ -139,7 +137,6 @@ private fun Screen(
     textAeadList: List<String> = listOf(),
     isLoadingMode: Boolean = false,
     isWrongPassword: Boolean = false,
-    keysetHash: String = "keyset_hash",
     dataTypes: List<DataItem> = dataTypesList,
     selectedDataType: DataItem = dataTypes[0],
     onSelectDataType: (Int) -> Unit = {},
@@ -230,17 +227,11 @@ private fun Screen(
                 )
             }
 
-            @Composable
-            fun keysetInfo() = Text(keysetHash)
-
             if (localWindowWidth.isCompact) {
                 keysetKeyField()
                 dataTypeMenu()
                 aeadTypeMenu()
-                if (!isLoadingMode) {
-                    toolbar()
-                    keysetInfo()
-                }
+                if (!isLoadingMode) toolbar()
             } else {
                 Row(horizontalArrangement = defaultHorizontalArrangement) {
                     val horizontalAlignment = Alignment.CenterHorizontally
@@ -263,7 +254,6 @@ private fun Screen(
                         )
                     }
                 }
-                if (!isLoadingMode) keysetInfo()
             }
         }
     }

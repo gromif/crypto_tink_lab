@@ -1,9 +1,6 @@
 package com.nevidimka655.tink_lab
 
 import android.net.Uri
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -70,10 +67,7 @@ class TinkLabKeyViewModel @Inject constructor(
         } else false
     }
 
-    suspend fun shuffleKeyset(
-        dataType: DataType,
-        aeadType: String
-    ) = withContext(defaultDispatcher) {
+    suspend fun newKeyset(dataType: DataType, aeadType: String) = withContext(defaultDispatcher) {
         val newTinkLabKey = createLabKeyUseCase(dataType = dataType, aeadType = aeadType)
         key.update { newTinkLabKey }
     }
