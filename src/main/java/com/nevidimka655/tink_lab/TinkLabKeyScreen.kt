@@ -81,7 +81,7 @@ fun TinkLabKeyScreen(
     LaunchedEffect(Unit) {
         onRequestKeysetChannel.collectLatest {
             val key: Key
-            if (isLoadMode) {
+            if (keysetUriToLoadState.isNotEmpty()) {
                 val loadedKey = vm.load()
                 if (loadedKey == null) {
                     keysetPasswordErrorState = true
