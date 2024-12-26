@@ -186,6 +186,7 @@ private fun Screen(
                     DataType.Text -> textAeadList
                 }
             }
+            LaunchedEffect(aeadTypes) { onSelectAeadType(aeadTypes[0]) }
 
             @Composable
             fun aeadTypeMenu() = AeadTypeMenu(
