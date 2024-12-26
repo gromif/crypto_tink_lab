@@ -1,4 +1,4 @@
-package com.nevidimka655.tink_lab
+package com.nevidimka655.tink_lab.key
 
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
@@ -15,7 +15,6 @@ import com.nevidimka655.tink_lab.domain.usecase.SaveKeyUseCase
 import com.nevidimka655.tink_lab.domain.util.KeyReader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -29,7 +28,7 @@ private const val DATA_TYPE = "data_type"
 private const val AEAD_TYPE = "aead_type"
 
 @HiltViewModel
-internal class TinkLabKeyViewModel @Inject constructor(
+internal class KeyViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
     private val state: SavedStateHandle,

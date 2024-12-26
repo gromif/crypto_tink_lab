@@ -1,4 +1,4 @@
-package com.nevidimka655.tink_lab
+package com.nevidimka655.tink_lab.key
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,8 +48,8 @@ import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.domain.model.DataItem
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.Key
-import com.nevidimka655.tink_lab.menu.AeadTypeMenu
-import com.nevidimka655.tink_lab.menu.DataTypeMenu
+import com.nevidimka655.tink_lab.key.menu.AeadTypeMenu
+import com.nevidimka655.tink_lab.key.menu.DataTypeMenu
 import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
@@ -62,13 +62,13 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun TinkLabKeyScreen(
+fun KeyScreen(
     modifier: Modifier = Modifier,
     onRequestKeysetChannel: Flow<Unit>,
     navigateToTextMode: (keyset: String) -> Unit,
     navigateToFilesMode: (keyset: String) -> Unit
 ) {
-    val vm: TinkLabKeyViewModel = hiltViewModel()
+    val vm: KeyViewModel = hiltViewModel()
     val context = LocalContext.current
 
     val dataType by vm.dataTypeState.collectAsStateWithLifecycle(DataType.Files)
