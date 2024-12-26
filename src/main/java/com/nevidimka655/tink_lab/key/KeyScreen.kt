@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
+import com.nevidimka655.tink_lab.TinkLab
 import com.nevidimka655.tink_lab.domain.model.DataItem
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.Key
@@ -62,7 +63,7 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun KeyScreen(
+fun TinkLab.KeyScreen(
     modifier: Modifier = Modifier,
     onRequestKeysetChannel: Flow<Unit>,
     navigateToTextMode: (keyset: String) -> Unit,
