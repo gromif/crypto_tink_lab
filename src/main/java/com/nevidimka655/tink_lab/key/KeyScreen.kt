@@ -51,6 +51,7 @@ import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.key.menu.AeadTypeMenu
 import com.nevidimka655.tink_lab.key.menu.DataTypeMenu
+import com.nevidimka655.tink_lab.shared.ToolbarButton
 import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
@@ -297,15 +298,3 @@ private fun KeysetKeyTextField(
         modifier = Modifier.fillMaxWidth()
     )
 }
-
-@Preview
-@Composable
-private fun ToolbarButton(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector = Icons.Default.Save,
-    text: String = "Button",
-    enabled: Boolean = true,
-    onClick: () -> Unit = {}
-) = FilledTonalButtonWithIcon(
-    modifier = modifier, enabled = enabled, icon = imageVector, title = text, onClick = onClick
-)
