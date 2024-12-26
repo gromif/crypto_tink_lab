@@ -35,6 +35,8 @@ import com.nevidimka655.ui.compose_core.theme.spaces
 @Composable
 fun TinkLab.TextScreen(modifier: Modifier = Modifier) {
     val vm: TextViewModel = hiltViewModel()
+
+    Screen(modifier = modifier)
 }
 
 @Preview(showBackground = true)
