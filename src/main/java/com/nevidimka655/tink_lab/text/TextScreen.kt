@@ -1,5 +1,6 @@
 package com.nevidimka655.tink_lab.text
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,12 +19,19 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.TinkLab
 import com.nevidimka655.tink_lab.shared.ToolbarButton
@@ -31,12 +39,47 @@ import com.nevidimka655.ui.compose_core.OutlinedButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
+import kotlinx.coroutines.launch
 
 @Composable
-fun TinkLab.TextScreen(modifier: Modifier = Modifier) {
+fun TinkLab.TextScreen(
+    modifier: Modifier = Modifier,
+    rawKeyset: String
+) {
     val vm: TextViewModel = hiltViewModel()
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) { vm.parseKeysetHandle(rawKeyset = rawKeyset) }
 
-    Screen(modifier = modifier)
+    val associatedData by vm.associatedDataState.collectAsStateWithLifecycle()
+    val text by vm.textState.collectAsStateWithLifecycle()
+
+    Screen(
+        modifier = modifier,
+        associatedData = associatedData,
+        onAssociatedDataChange = { vm.setAssociatedData(data = it) },
+        text = text,
+        onTextChange = { vm.setText(text = it) },
+        onPasteClick = {
+            val textInClipboard = clipboardManager.getText()
+            if (textInClipboard != null) vm.setText(textInClipboard.text)
+        },
+        onClearClick = { vm.setText(text = "") },
+        onCopyClick = {
+            val annotatedString = buildAnnotatedString { append(text) }
+            clipboardManager.setText(annotatedString)
+        },
+        onEncrypt = { vm.encrypt() },
+        onDecrypt = {
+            scope.launch {
+                val decryptResult = vm.decrypt()
+                if (!decryptResult) Toast.makeText(
+                    context, R.string.error, Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)
@@ -49,11 +92,12 @@ private fun Screen(
     onTextChange: (String) -> Unit = {},
     onPasteClick: () -> Unit = {},
     onClearClick: () -> Unit = {},
-    onCopyClick: () -> Unit = {}
+    onCopyClick: () -> Unit = {},
+    onEncrypt: () -> Unit = {},
+    onDecrypt: () -> Unit = {}
 ) = Column(
     modifier = modifier.padding(MaterialTheme.spaces.spaceMedium),
-    verticalArrangement =
-        Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium, Alignment.CenterVertically)
+    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
 ) {
     val defaultHorizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceSmall)
 
@@ -66,12 +110,14 @@ private fun Screen(
         ToolbarButton(
             imageVector = Icons.Default.Lock,
             text = stringResource(id = R.string.encrypt),
-            modifier = Modifier.weight(0.5f)
+            modifier = Modifier.weight(0.5f),
+            onClick = onEncrypt
         )
         ToolbarButton(
             imageVector = Icons.Default.NoEncryption,
             text = stringResource(id = R.string.decrypt),
-            modifier = Modifier.weight(0.5f)
+            modifier = Modifier.weight(0.5f),
+            onClick = onDecrypt
         )
     }
 
