@@ -3,7 +3,6 @@ package com.nevidimka655.tink_lab.key
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.domain.model.DataType
@@ -18,7 +17,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -53,12 +51,12 @@ internal class KeyViewModel @Inject constructor(
 
     suspend fun createKey() = keysetHandleFlow.first()
 
-    fun save(uri: Uri) = viewModelScope.launch(defaultDispatcher) {
-        saveKeyUseCase(
-            key = createKey(),
-            uriString = uriToStringMapper(uri),
-            keysetPassword = keysetPasswordState.value
-        )
+    suspend fun save(uri: Uri) = withContext(defaultDispatcher) {
+        val keysetPassword = keysetPasswordState.value
+        val uriString = uriToStringMapper(uri)
+        createKey().also {
+            saveKeyUseCase(key = it, uriString = uriString, keysetPassword = keysetPassword)
+        }
     }
 
     suspend fun load() = withContext(defaultDispatcher) {

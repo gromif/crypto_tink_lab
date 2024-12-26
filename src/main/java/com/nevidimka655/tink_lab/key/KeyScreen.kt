@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +57,11 @@ import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
@@ -72,6 +75,7 @@ fun TinkLab.KeyScreen(
 ) {
     val vm: KeyViewModel = hiltViewModel()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val dataType by vm.dataTypeState.collectAsStateWithLifecycle(DataType.Files)
     val aeadType by vm.aeadTypeState.collectAsStateWithLifecycle()
@@ -79,6 +83,11 @@ fun TinkLab.KeyScreen(
     var keysetPasswordErrorState by remember { mutableStateOf(false) }
     val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
     val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
+
+    fun navigate(dataType: DataType, rawKeyset: String) = when (dataType) {
+        DataType.Files -> navigateToFilesMode(rawKeyset)
+        DataType.Text -> navigateToTextMode(rawKeyset)
+    }
 
     LaunchedEffect(Unit) {
         onRequestKeysetChannel.collectLatest {
@@ -95,10 +104,7 @@ fun TinkLab.KeyScreen(
                     return@collectLatest
                 } else key = loadedKey
             } else key = vm.createKey()
-            when (key.dataType) {
-                DataType.Files -> navigateToFilesMode(key.rawKeyset)
-                DataType.Text -> navigateToTextMode(key.rawKeyset)
-            }
+            navigate(key.dataType, key.rawKeyset)
         }
     }
 
@@ -108,7 +114,13 @@ fun TinkLab.KeyScreen(
 
     val saveContract = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
-    ) { if (it != null) vm.save(uri = it) }
+    ) {
+        if (it != null) scope.launch {
+            val key = vm.save(uri = it)
+            vm.setKeysetPassword("")
+            navigate(key.dataType, key.rawKeyset)
+        }
+    }
 
     Screen(
         modifier = modifier,
