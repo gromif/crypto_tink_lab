@@ -29,7 +29,7 @@ private const val DATA_TYPE = "data_type"
 private const val AEAD_TYPE = "aead_type"
 
 @HiltViewModel
-class TinkLabKeyViewModel @Inject constructor(
+internal class TinkLabKeyViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
     private val state: SavedStateHandle,
