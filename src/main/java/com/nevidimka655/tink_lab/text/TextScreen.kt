@@ -11,8 +11,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Dataset
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.NoEncryption
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
@@ -34,7 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.TinkLab
-import com.nevidimka655.tink_lab.shared.ToolbarButton
+import com.nevidimka655.tink_lab.shared.EncryptionToolbar
 import com.nevidimka655.ui.compose_core.OutlinedButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
@@ -102,26 +100,6 @@ private fun Screen(
     val defaultHorizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceSmall)
 
     @Composable
-    fun encryptionToolbar(modifier: Modifier = Modifier) = Row(
-        horizontalArrangement = defaultHorizontalArrangement,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-    ) {
-        ToolbarButton(
-            imageVector = Icons.Default.Lock,
-            text = stringResource(id = R.string.encrypt),
-            modifier = Modifier.weight(0.5f),
-            onClick = onEncrypt
-        )
-        ToolbarButton(
-            imageVector = Icons.Default.NoEncryption,
-            text = stringResource(id = R.string.decrypt),
-            modifier = Modifier.weight(0.5f),
-            onClick = onDecrypt
-        )
-    }
-
-    @Composable
     fun clipboardToolbar(modifier: Modifier = Modifier) = Row(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically,
@@ -165,7 +143,7 @@ private fun Screen(
     }
 
     val localWindowWidth = LocalWindowWidth.current
-    encryptionToolbar()
+    EncryptionToolbar(onEncrypt = onEncrypt, onDecrypt = onDecrypt)
     AssociatedDataTextField(
         modifier = Modifier.fillMaxWidth(),
         value = associatedData,
