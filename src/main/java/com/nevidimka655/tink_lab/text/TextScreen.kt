@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentPaste
-import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
@@ -26,12 +25,12 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.TinkLab
+import com.nevidimka655.tink_lab.shared.AssociatedDataTextField
 import com.nevidimka655.tink_lab.shared.EncryptionToolbar
 import com.nevidimka655.ui.compose_core.OutlinedButtonWithIcon
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
@@ -153,27 +152,6 @@ private fun Screen(
     else clipboardToolbarExpanded()
     UserTextField(value = text, onValueChange = onTextChange)
 }
-
-@Composable
-private fun AssociatedDataTextField(
-    modifier: Modifier = Modifier,
-    value: String,
-    onValueChange: (String) -> Unit
-) = OutlinedTextField(
-    value = value,
-    onValueChange = onValueChange,
-    leadingIcon = { Icon(imageVector = Icons.Default.Dataset, null) },
-    supportingText = {
-        Text(
-            text = "${value.length}",
-            textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
-        )
-    },
-    label = { Text(text = stringResource(id = R.string.associatedData)) },
-    singleLine = true,
-    modifier = modifier
-)
 
 @Composable
 private fun UserTextField(value: String, onValueChange: (String) -> Unit) = OutlinedTextField(
