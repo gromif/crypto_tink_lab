@@ -21,6 +21,9 @@ dependencies {
     implementation(projects.core.utils)
     implementation(projects.core.tink)
     implementation(projects.di.core)
+
+    implementation(libs.androidx.documentfile)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
