@@ -31,9 +31,12 @@ import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
 
 @Composable
-fun TinkLab.FilesScreen(modifier: Modifier = Modifier) {
+fun TinkLab.FilesScreen(
+    modifier: Modifier = Modifier,
+    rawKeyset: String
+) {
 
-    Screen()
+    Screen(modifier = modifier)
 }
 
 @Preview(showBackground = true)
