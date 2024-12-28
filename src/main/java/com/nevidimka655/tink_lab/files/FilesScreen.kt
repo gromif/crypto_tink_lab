@@ -34,6 +34,7 @@ import com.nevidimka655.ui.compose_core.theme.spaces
 @Composable
 fun TinkLab.FilesScreen(modifier: Modifier = Modifier) {
 
+    Screen()
 }
 
 @Preview(showBackground = true)
@@ -103,6 +104,7 @@ private fun SourceTextField(
         IconButton(icon = Icons.Outlined.FolderOpen, onClick = onSourceClick)
     },
     readOnly = true,
+    singleLine = true,
     modifier = Modifier.fillMaxWidth()
 )
 
@@ -121,6 +123,7 @@ private fun DestinationTextField(
         IconButton(icon = Icons.Outlined.FolderOpen, onClick = onDestinationClick)
     },
     readOnly = true,
+    singleLine = true,
     modifier = Modifier.fillMaxWidth()
 )
 
