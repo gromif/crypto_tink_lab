@@ -11,36 +11,37 @@ import android.text.format.DateFormat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.google.crypto.tink.JsonKeysetReader
-import com.google.crypto.tink.KeysetHandle
 import com.google.crypto.tink.StreamingAead
+import com.google.crypto.tink.config.TinkConfig
+import com.google.crypto.tink.integration.android.AndroidKeystore
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.astracrypt.utils.Api
-import com.nevidimka655.crypto.tink.data.KeysetManager
-import com.nevidimka655.crypto.tink.data.TinkConfig
-import com.nevidimka655.crypto.tink.domain.KeysetTemplates
-import com.nevidimka655.crypto.tink.extensions.aeadPrimitive
-import com.nevidimka655.crypto.tink.extensions.fromBase64
+import com.nevidimka655.astracrypt.utils.Mapper
+import com.nevidimka655.crypto.tink.core.encoders.Base64Util
+import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
 import com.nevidimka655.crypto.tink.extensions.streamingAeadPrimitive
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
+@HiltWorker
 class TinkLabFilesWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
-    private val keysetManager: KeysetManager,
-    private val workManager: WorkManager
+    private val keysetParser: KeysetParser,
+    private val workManager: WorkManager,
+    private val base64Util: Base64Util,
+    private val stringToUriMapper: Mapper<String, Uri>
 ) : CoroutineWorker(context, params) {
     private val contentResolver: ContentResolver = applicationContext.contentResolver
 
@@ -53,8 +54,8 @@ class TinkLabFilesWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val keysetTransportAssociatedData = "b1"
-        const val associatedDataTransportAssociatedData = "b2"
+        const val ANDROID_KEYSET_ALIAS = "TINK_LAB_FILES_WORKER_DATA_KEY"
+        const val ASSOCIATED_DATA = "workerAD_labFiles"
     }
 
     private val notificationId = 202
@@ -62,25 +63,38 @@ class TinkLabFilesWorker @AssistedInject constructor(
     override suspend fun doWork() = withContext(defaultDispatcher) {
         var workerResult = Result.success()
         setForeground(getForegroundInfo())
-        TinkConfig.initStream()
-        val aeadForKeyset = keysetManager.aead(KeysetTemplates.AEAD.AES256_GCM).aeadPrimitive()
-        val keysetHandle = inputData.getString(Args.ENCRYPTED_KEYSET)!!.run {
-            KeysetHandle.readWithAssociatedData(
-                JsonKeysetReader.withBytes(fromBase64()),
-                aeadForKeyset,
-                keysetTransportAssociatedData.toByteArray()
-            )
+        TinkConfig.register()
+
+        val dataAead = AndroidKeystore.getAead(ANDROID_KEYSET_ALIAS)
+        val dataAD = ASSOCIATED_DATA.toByteArray()
+        val sourceUriArray = inputData.getStringArray(Args.SOURCE_URI_ARRAY)!!.map {
+            val decodedBase64 = base64Util.decode(it)
+            val decryptedUri = dataAead.decrypt(decodedBase64, dataAD).decodeToString()
+            stringToUriMapper(decryptedUri)
         }
-        val associatedData = inputData.getString(Args.ENCRYPTED_AD)!!.run {
-            aeadForKeyset.decrypt(
-                fromBase64(),
-                associatedDataTransportAssociatedData.toByteArray()
-            )
-        }
+        val targetUri = stringToUriMapper(
+            dataAead.decrypt(
+                base64Util.decode(
+                    inputData.getString(Args.TARGET_URI)!!.toByteArray()
+                ), dataAD
+            ).decodeToString()
+        )
+        val associatedData = dataAead.decrypt(
+            base64Util.decode(
+                inputData.getString(Args.ENCRYPTED_AD)!!.toByteArray()
+            ), dataAD
+        )
+        val keysetHandle = keysetParser(
+            dataAead.decrypt(
+                base64Util.decode(
+                    inputData.getString(Args.ENCRYPTED_KEYSET)!!.toByteArray()
+                ), dataAD
+            ).decodeToString()
+        )
+        AndroidKeystore.deleteKey(ANDROID_KEYSET_ALIAS)
+
         val mode = inputData.getBoolean(Args.MODE, false)
-        val destinationUri = inputData.getString(Args.TARGET_URI)!!.toUri()
-        val sourceUriArray = inputData.getStringArray(Args.SOURCE_URI_ARRAY)!!.map { it.toUri() }
-        val destinationRoot = DocumentFile.fromTreeUri(applicationContext, destinationUri)!!
+        val destinationRoot = DocumentFile.fromTreeUri(applicationContext, targetUri)!!
         val datePattern = "dd_mm_yyyy_hh:mm:ss"
         val date = DateFormat.format(datePattern, System.currentTimeMillis()).toString()
         val destination = destinationRoot.createDirectory("Exported_$date")!!
@@ -95,7 +109,7 @@ class TinkLabFilesWorker @AssistedInject constructor(
                     sourceUri = it
                 )
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             destination.delete()
             workerResult = Result.failure()
         }

@@ -1,5 +1,7 @@
 package com.nevidimka655.tink_lab.files
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,11 +18,15 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.TinkLab
 import com.nevidimka655.tink_lab.shared.AssociatedDataTextField
@@ -35,8 +41,33 @@ fun TinkLab.FilesScreen(
     modifier: Modifier = Modifier,
     rawKeyset: String
 ) {
+    val context = LocalContext.current
+    val vm: FilesViewModel = hiltViewModel()
+    val associatedData by vm.associatedData.collectAsStateWithLifecycle()
+    val source by vm.sourceDirName.collectAsStateWithLifecycle()
+    val destination by vm.destinationDirName.collectAsStateWithLifecycle()
 
-    Screen(modifier = modifier)
+    val sourceContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { if (it != null) vm.setSource(context, it) }
+
+    val destinationDirContract = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { if (it != null) vm.setDestinationDir(context, it) }
+
+    Screen(
+        modifier = modifier,
+        onEncrypt = { vm.startFilesWorker(rawKeyset = rawKeyset, true) },
+        onDecrypt = { vm.startFilesWorker(rawKeyset = rawKeyset, false) },
+        associatedData = associatedData,
+        onAssociatedDataChange = { vm.setAssociatedData(it) },
+        source = source,
+        onSourceClick = { sourceContract.launch(arrayOf("*/*")) },
+        destination = destination,
+        onDestinationClick = { destinationDirContract.launch(null) },
+        details = "",
+        progress = 0.7f
+    )
 }
 
 @Preview(showBackground = true)
@@ -132,13 +163,18 @@ private fun DestinationTextField(
 @Composable
 private fun DetailsCard(details: String, progress: Float) = OutlinedCard {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.spaces.spaceMedium),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(MaterialTheme.spaces.spaceMedium),
         verticalArrangement = Arrangement.spacedBy(
             MaterialTheme.spaces.spaceMedium
         ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(R.string.files_options_details), fontWeight = FontWeight.SemiBold)
+        Text(
+            text = stringResource(R.string.files_options_details),
+            fontWeight = FontWeight.SemiBold
+        )
         Text(text = details)
         LinearProgressIndicator(progress = { progress })
     }
