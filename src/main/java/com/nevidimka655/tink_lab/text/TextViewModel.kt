@@ -18,7 +18,7 @@ private const val ASSOCIATED_DATA = "adata"
 private const val TEXT = "utext"
 
 @HiltViewModel
-class TextViewModel @Inject constructor(
+internal class TextViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
     private val state: SavedStateHandle,

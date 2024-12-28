@@ -27,7 +27,7 @@ private const val STATE_SOURCE_NAME = "source_name"
 private const val STATE_ASSOCIATED_DATA = "ad"
 
 @HiltViewModel
-class FilesViewModel @Inject constructor(
+internal class FilesViewModel @Inject constructor(
     private val state: SavedStateHandle,
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,

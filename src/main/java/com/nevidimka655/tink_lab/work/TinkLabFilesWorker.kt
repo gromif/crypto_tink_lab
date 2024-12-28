@@ -33,7 +33,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class TinkLabFilesWorker @AssistedInject constructor(
+internal class TinkLabFilesWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     @IoDispatcher
