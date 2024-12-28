@@ -2,12 +2,16 @@ package com.nevidimka655.tink_lab.files
 
 import android.content.Context
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.crypto.tink.integration.android.AndroidKeystore
@@ -17,6 +21,10 @@ import com.nevidimka655.crypto.tink.core.encoders.Base64Util
 import com.nevidimka655.tink_lab.work.TinkLabFilesWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,12 +42,14 @@ internal class FilesViewModel @Inject constructor(
     private val workManager: WorkManager,
     private val base64Util: Base64Util,
     private val uriToStringMapper: Mapper<Uri, String>
-): ViewModel() {
+) : ViewModel() {
     private val destinationUriString = state.getStateFlow<String?>(STATE_DESTINATION_DIR_URI, null)
     private val sourceUriString = state.getStateFlow<String?>(STATE_SOURCE_URI, null)
     val destinationDirName = state.getStateFlow(STATE_DESTINATION_DIR_NAME, "")
     val sourceDirName = state.getStateFlow(STATE_SOURCE_NAME, "")
     val associatedData = state.getStateFlow(STATE_ASSOCIATED_DATA, "")
+    var isWorkerActive by mutableStateOf(false)
+        private set
 
     fun startFilesWorker(
         rawKeyset: String,
@@ -48,23 +58,27 @@ internal class FilesViewModel @Inject constructor(
         AndroidKeystore.generateNewAes256GcmKey(TinkLabFilesWorker.ANDROID_KEYSET_ALIAS)
         val dataAead = AndroidKeystore.getAead(TinkLabFilesWorker.ANDROID_KEYSET_ALIAS)
         val workerAD = TinkLabFilesWorker.ASSOCIATED_DATA.toByteArray()
-        val encryptedSourceArray = arrayOf(sourceUriString.value!!).map {
-            base64Util.encode(dataAead.encrypt(it.toByteArray(), workerAD))
-        }.toTypedArray()
-        val encryptedTargetUri = base64Util.encode(
-            dataAead.encrypt(destinationUriString.value!!.toByteArray(), workerAD)
-        )
-        val encryptedAssociatedData = base64Util.encode(
-            dataAead.encrypt(associatedData.value.toByteArray(), workerAD)
-        )
-        val encryptedKeyset = base64Util.encode(
-            dataAead.encrypt(rawKeyset.toByteArray(), workerAD)
-        )
+        val encryptedSourceArray = async {
+            arrayOf(sourceUriString.value!!).map {
+                base64Util.encode(dataAead.encrypt(it.toByteArray(), workerAD))
+            }.toTypedArray()
+        }
+        val encryptedTargetUri = async {
+            base64Util.encode(
+                dataAead.encrypt(destinationUriString.value!!.toByteArray(), workerAD)
+            )
+        }
+        val encryptedAssociatedData = async {
+            base64Util.encode(dataAead.encrypt(associatedData.value.toByteArray(), workerAD))
+        }
+        val encryptedKeyset = async {
+            base64Util.encode(dataAead.encrypt(rawKeyset.toByteArray(), workerAD))
+        }
         val data = workDataOf(
-            TinkLabFilesWorker.Args.SOURCE_URI_ARRAY to encryptedSourceArray,
-            TinkLabFilesWorker.Args.TARGET_URI to encryptedTargetUri,
-            TinkLabFilesWorker.Args.ENCRYPTED_AD to encryptedAssociatedData,
-            TinkLabFilesWorker.Args.ENCRYPTED_KEYSET to encryptedKeyset,
+            TinkLabFilesWorker.Args.SOURCE_URI_ARRAY to encryptedSourceArray.await(),
+            TinkLabFilesWorker.Args.TARGET_URI to encryptedTargetUri.await(),
+            TinkLabFilesWorker.Args.ENCRYPTED_AD to encryptedAssociatedData.await(),
+            TinkLabFilesWorker.Args.ENCRYPTED_KEYSET to encryptedKeyset.await(),
             TinkLabFilesWorker.Args.MODE to mode
         )
         val workerRequest = OneTimeWorkRequestBuilder<TinkLabFilesWorker>().apply {
@@ -72,6 +86,17 @@ internal class FilesViewModel @Inject constructor(
             setInputData(data)
         }.build()
         workManager.enqueue(workerRequest)
+        workManager.getWorkInfoByIdFlow(id = workerRequest.id).collectLatest {
+            when (it?.state) {
+                WorkInfo.State.SUCCEEDED,
+                WorkInfo.State.FAILED -> {
+                    isWorkerActive = false
+                    cancel()
+                }
+
+                else -> { isWorkerActive = true }
+            }
+        }
     }
 
     fun setSource(context: Context, uri: Uri) = viewModelScope.launch(defaultDispatcher) {

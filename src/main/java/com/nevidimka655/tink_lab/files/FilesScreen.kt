@@ -2,6 +2,11 @@ package com.nevidimka655.tink_lab.files
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,8 +70,7 @@ fun TinkLab.FilesScreen(
         onSourceClick = { sourceContract.launch(arrayOf("*/*")) },
         destination = destination,
         onDestinationClick = { destinationDirContract.launch(null) },
-        details = "",
-        progress = 0.7f
+        processingState = vm.isWorkerActive
     )
 }
 
@@ -82,8 +86,7 @@ private fun Screen(
     onSourceClick: () -> Unit = {},
     destination: String = "Destination",
     onDestinationClick: () -> Unit = {},
-    details: String = "Processing file",
-    progress: Float = 0.5f
+    processingState: Boolean = false
 ) = Column(
     modifier = modifier.padding(MaterialTheme.spaces.spaceMedium),
     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
@@ -98,14 +101,14 @@ private fun Screen(
         )
         SourceTextField(value = source, onSourceClick = onSourceClick)
         DestinationTextField(value = destination, onDestinationClick = onDestinationClick)
-        DetailsCard(details = details, progress = progress)
+        DetailsCard(state = processingState)
     } else Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)) {
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
         ) {
             EncryptionToolbar(onEncrypt = onEncrypt, onDecrypt = onDecrypt)
-            DetailsCard(details = details, progress = progress)
+            DetailsCard(state = processingState)
         }
         Column(
             modifier = Modifier.weight(1f),
@@ -161,21 +164,26 @@ private fun DestinationTextField(
 )
 
 @Composable
-private fun DetailsCard(details: String, progress: Float) = OutlinedCard {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(MaterialTheme.spaces.spaceMedium),
-        verticalArrangement = Arrangement.spacedBy(
-            MaterialTheme.spaces.spaceMedium
-        ),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(R.string.files_options_details),
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(text = details)
-        LinearProgressIndicator(progress = { progress })
+private fun DetailsCard(state: Boolean) = AnimatedVisibility(
+    visible = state,
+    enter = expandVertically() + fadeIn(),
+    exit = shrinkVertically() + fadeOut()
+) {
+    OutlinedCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spaces.spaceMedium),
+            verticalArrangement = Arrangement.spacedBy(
+                MaterialTheme.spaces.spaceMedium
+            ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.dialog_exporting),
+                fontWeight = FontWeight.SemiBold
+            )
+            LinearProgressIndicator()
+        }
     }
 }
