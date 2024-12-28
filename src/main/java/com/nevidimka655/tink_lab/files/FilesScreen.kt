@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Output
-import androidx.compose.material.icons.filled.Source
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Source
 import androidx.compose.material3.Icon
@@ -26,7 +25,7 @@ import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.tink_lab.TinkLab
 import com.nevidimka655.tink_lab.shared.AssociatedDataTextField
 import com.nevidimka655.tink_lab.shared.EncryptionToolbar
-import com.nevidimka655.ui.compose_core.IconButton
+import com.nevidimka655.ui.compose_core.FilledTonalIconButton
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
 import com.nevidimka655.ui.compose_core.theme.spaces
@@ -101,7 +100,7 @@ private fun SourceTextField(
         Icon(imageVector = Icons.Outlined.Source, stringResource(R.string.add))
     },
     trailingIcon = {
-        IconButton(icon = Icons.Outlined.FolderOpen, onClick = onSourceClick)
+        FilledTonalIconButton(icon = Icons.Outlined.FolderOpen, onClick = onSourceClick)
     },
     readOnly = true,
     singleLine = true,
@@ -120,7 +119,7 @@ private fun DestinationTextField(
         Icon(imageVector = Icons.Default.Output, null)
     },
     trailingIcon = {
-        IconButton(icon = Icons.Outlined.FolderOpen, onClick = onDestinationClick)
+        FilledTonalIconButton(icon = Icons.Outlined.FolderOpen, onClick = onDestinationClick)
     },
     readOnly = true,
     singleLine = true,
