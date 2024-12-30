@@ -20,7 +20,7 @@ dependencies {
     implementation(projects.core.resources)
     implementation(projects.core.utils)
     implementation(projects.core.tink)
-    implementation(projects.di.core)
+    implementation(projects.di.utils)
 
     implementation(libs.androidx.documentfile)
 
