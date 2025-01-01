@@ -26,7 +26,7 @@ import com.nevidimka655.astracrypt.utils.Api
 import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.crypto.tink.core.encoders.Base64Util
 import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
-import com.nevidimka655.crypto.tink.extensions.streamingAeadPrimitive
+import com.nevidimka655.crypto.tink.extensions.streamingAead
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -98,7 +98,7 @@ internal class TinkLabFilesWorker @AssistedInject constructor(
         val datePattern = "dd_mm_yyyy_hh:mm:ss"
         val date = DateFormat.format(datePattern, System.currentTimeMillis()).toString()
         val destination = destinationRoot.createDirectory("Exported_$date")!!
-        val streamAead = keysetHandle.streamingAeadPrimitive()
+        val streamAead = keysetHandle.streamingAead()
         try {
             sourceUriArray.forEach {
                 iterator(
