@@ -7,7 +7,7 @@ import com.google.crypto.tink.Aead
 import com.nevidimka655.astracrypt.core.di.IoDispatcher
 import com.nevidimka655.crypto.tink.core.encoders.Base64Util
 import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
-import com.nevidimka655.crypto.tink.extensions.aeadPrimitive
+import com.nevidimka655.crypto.tink.extensions.aead
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ internal class TextViewModel @Inject constructor(
     val textState = state.getStateFlow(TEXT, "")
 
     suspend fun parseKeysetHandle(rawKeyset: String) = withContext(defaultDispatcher) {
-        if (aead == null) aead = keysetParser(rawKeyset).aeadPrimitive()
+        if (aead == null) aead = keysetParser(rawKeyset).aead()
     }
 
     fun encrypt() = viewModelScope.launch(defaultDispatcher) {
