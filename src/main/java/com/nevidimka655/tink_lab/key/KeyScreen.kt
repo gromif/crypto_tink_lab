@@ -17,12 +17,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -53,11 +49,11 @@ import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.key.menu.AeadTypeMenu
 import com.nevidimka655.tink_lab.key.menu.DataTypeMenu
 import com.nevidimka655.tink_lab.shared.ToolbarButton
-import com.nevidimka655.ui.compose_core.FilledTonalButtonWithIcon
+import com.nevidimka655.ui.compose_core.TextFields
 import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
 import com.nevidimka655.ui.compose_core.ext.isCompact
+import com.nevidimka655.ui.compose_core.text_fields.icons.PasswordToggleIconButton
 import com.nevidimka655.ui.compose_core.theme.spaces
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -217,7 +213,6 @@ private fun Screen(
             fun keysetKeyField() = KeysetKeyTextField(
                 value = keysetKey,
                 onValueChange = onChangeKeysetKey,
-                label = stringResource(id = R.string.lab_keySetPassword),
                 isError = isWrongPassword
             )
 
@@ -277,10 +272,9 @@ private fun Screen(
 private fun KeysetKeyTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
     isError: Boolean
 ) {
-    var passwordToggleState by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -292,19 +286,12 @@ private fun KeysetKeyTextField(
                 modifier = Modifier.fillMaxWidth()
             )
         },
-        label = { Text(text = label) },
         trailingIcon = {
-            IconButton(onClick = { passwordToggleState = !passwordToggleState }) {
-                Icon(
-                    imageVector = if (!passwordToggleState) {
-                        Icons.Default.VisibilityOff
-                    } else Icons.Default.Visibility, contentDescription = null
-                )
-            }
+            TextFields.Icons.PasswordToggleIconButton(passwordVisible) { passwordVisible = it }
         },
-        visualTransformation = if (!passwordToggleState) {
-            PasswordVisualTransformation()
-        } else VisualTransformation.None,
+        placeholder = TextFields.placeholder(text = stringResource(R.string.lab_keySetPassword)),
+        label = TextFields.label(text = stringResource(R.string.lab_keySetPassword)),
+        visualTransformation = TextFields.passwordVisualTransform(state = passwordVisible),
         singleLine = true,
         isError = isError,
         modifier = Modifier.fillMaxWidth()
