@@ -28,7 +28,7 @@ class KeyReaderImpl(
         val keyDto: KeyDto
         try {
             contentResolver.openInputStream(uri)?.use {
-                val encoded = it.readAllBytes().decodeToString()
+                val encoded = it.readBytes().decodeToString()
                 keyDto = keyParser(encoded)
             } ?: return KeyReader.Result.Error
             val keysetHandle = keysetParserWithKey(
