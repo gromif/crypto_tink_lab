@@ -7,14 +7,14 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import io.gromif.crypto.tink.encoders.HexUtil
+import io.gromif.crypto.tink.encoders.HexEncoder
 
 @Module
 @InstallIn(ViewModelComponent::class)
 internal object SerializerModule {
 
     @Provides
-    fun provideKeySerializer(hexUtil: HexUtil): Serializer<KeyDto, String> =
-        KeySerializer(hexUtil = hexUtil)
+    fun provideKeySerializer(hexEncoder: HexEncoder): Serializer<KeyDto, String> =
+        KeySerializer(hexEncoder = hexEncoder)
 
 }

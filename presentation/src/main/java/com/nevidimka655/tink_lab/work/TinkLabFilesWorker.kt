@@ -27,7 +27,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
 import io.gromif.crypto.tink.core.parsers.KeysetParser
-import io.gromif.crypto.tink.encoders.Base64Util
+import io.gromif.crypto.tink.encoders.Base64Encoder
 import io.gromif.crypto.tink.extensions.streamingAead
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -40,7 +40,7 @@ internal class TinkLabFilesWorker @AssistedInject constructor(
     private val defaultDispatcher: CoroutineDispatcher,
     private val keysetParser: KeysetParser,
     private val workManager: WorkManager,
-    private val base64Util: Base64Util,
+    private val base64Encoder: Base64Encoder,
     private val stringToUriMapper: Mapper<String, Uri>
 ) : CoroutineWorker(context, params) {
     private val contentResolver: ContentResolver = applicationContext.contentResolver
@@ -68,25 +68,25 @@ internal class TinkLabFilesWorker @AssistedInject constructor(
         val dataAead = AndroidKeystore.getAead(ANDROID_KEYSET_ALIAS)
         val dataAD = ASSOCIATED_DATA.toByteArray()
         val sourceUriArray = inputData.getStringArray(Args.SOURCE_URI_ARRAY)!!.map {
-            val decodedBase64 = base64Util.decode(it)
+            val decodedBase64 = base64Encoder.decode(it)
             val decryptedUri = dataAead.decrypt(decodedBase64, dataAD).decodeToString()
             stringToUriMapper(decryptedUri)
         }
         val targetUri = stringToUriMapper(
             dataAead.decrypt(
-                base64Util.decode(
+                base64Encoder.decode(
                     inputData.getString(Args.TARGET_URI)!!.toByteArray()
                 ), dataAD
             ).decodeToString()
         )
         val associatedData = dataAead.decrypt(
-            base64Util.decode(
+            base64Encoder.decode(
                 inputData.getString(Args.ENCRYPTED_AD)!!.toByteArray()
             ), dataAD
         )
         val keysetHandle = keysetParser(
             dataAead.decrypt(
-                base64Util.decode(
+                base64Encoder.decode(
                     inputData.getString(Args.ENCRYPTED_KEYSET)!!.toByteArray()
                 ), dataAD
             ).decodeToString()

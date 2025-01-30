@@ -19,7 +19,7 @@ import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.work.TinkLabFilesWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
-import io.gromif.crypto.tink.encoders.Base64Util
+import io.gromif.crypto.tink.encoders.Base64Encoder
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
@@ -39,7 +39,7 @@ internal class FilesViewModel @Inject constructor(
     @IoDispatcher
     private val defaultDispatcher: CoroutineDispatcher,
     private val workManager: WorkManager,
-    private val base64Util: Base64Util,
+    private val base64Encoder: Base64Encoder,
     private val uriToStringMapper: Mapper<Uri, String>
 ) : ViewModel() {
     private val destinationUriString = state.getStateFlow<String?>(STATE_DESTINATION_DIR_URI, null)
@@ -59,19 +59,19 @@ internal class FilesViewModel @Inject constructor(
         val workerAD = TinkLabFilesWorker.ASSOCIATED_DATA.toByteArray()
         val encryptedSourceArray = async {
             arrayOf(sourceUriString.value!!).map {
-                base64Util.encode(dataAead.encrypt(it.toByteArray(), workerAD))
+                base64Encoder.encode(dataAead.encrypt(it.toByteArray(), workerAD))
             }.toTypedArray()
         }
         val encryptedTargetUri = async {
-            base64Util.encode(
+            base64Encoder.encode(
                 dataAead.encrypt(destinationUriString.value!!.toByteArray(), workerAD)
             )
         }
         val encryptedAssociatedData = async {
-            base64Util.encode(dataAead.encrypt(associatedData.value.toByteArray(), workerAD))
+            base64Encoder.encode(dataAead.encrypt(associatedData.value.toByteArray(), workerAD))
         }
         val encryptedKeyset = async {
-            base64Util.encode(dataAead.encrypt(rawKeyset.toByteArray(), workerAD))
+            base64Encoder.encode(dataAead.encrypt(rawKeyset.toByteArray(), workerAD))
         }
         val data = workDataOf(
             TinkLabFilesWorker.Args.SOURCE_URI_ARRAY to encryptedSourceArray.await(),
