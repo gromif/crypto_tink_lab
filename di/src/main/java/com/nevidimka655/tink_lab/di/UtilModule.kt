@@ -5,15 +5,8 @@ import android.net.Uri
 import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.astracrypt.utils.Parser
 import com.nevidimka655.astracrypt.utils.Serializer
-import com.nevidimka655.crypto.tink.core.encoders.HexUtil
-import com.nevidimka655.crypto.tink.core.hash.Sha256Util
-import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
-import com.nevidimka655.crypto.tink.core.parsers.KeysetParserWithKey
-import com.nevidimka655.crypto.tink.core.serializers.KeysetSerializer
-import com.nevidimka655.crypto.tink.core.serializers.KeysetSerializerWithKey
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.data.util.KeyGeneratorImpl
-import com.nevidimka655.tink_lab.data.util.KeyParser
 import com.nevidimka655.tink_lab.data.util.KeyReaderImpl
 import com.nevidimka655.tink_lab.data.util.KeyWriterImpl
 import com.nevidimka655.tink_lab.domain.model.Key
@@ -25,6 +18,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.gromif.crypto.tink.core.parsers.KeysetParser
+import io.gromif.crypto.tink.core.parsers.KeysetParserWithKey
+import io.gromif.crypto.tink.core.serializers.KeysetSerializer
+import io.gromif.crypto.tink.core.serializers.KeysetSerializerWithKey
 
 @Module
 @InstallIn(ViewModelComponent::class)

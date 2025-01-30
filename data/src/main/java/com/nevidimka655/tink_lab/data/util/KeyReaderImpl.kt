@@ -4,11 +4,11 @@ import android.content.ContentResolver
 import android.net.Uri
 import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.astracrypt.utils.Parser
-import com.nevidimka655.crypto.tink.core.parsers.KeysetParserWithKey
-import com.nevidimka655.crypto.tink.core.serializers.KeysetSerializer
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.util.KeyReader
+import io.gromif.crypto.tink.core.parsers.KeysetParserWithKey
+import io.gromif.crypto.tink.core.serializers.KeysetSerializer
 
 class KeyReaderImpl(
     private val contentResolver: ContentResolver,

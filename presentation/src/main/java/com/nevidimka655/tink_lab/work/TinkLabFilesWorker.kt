@@ -23,12 +23,12 @@ import com.google.crypto.tink.integration.android.AndroidKeystore
 import com.nevidimka655.astracrypt.resources.R
 import com.nevidimka655.astracrypt.utils.Api
 import com.nevidimka655.astracrypt.utils.Mapper
-import com.nevidimka655.crypto.tink.core.encoders.Base64Util
-import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
-import com.nevidimka655.crypto.tink.extensions.streamingAead
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
+import io.gromif.crypto.tink.core.encoders.Base64Util
+import io.gromif.crypto.tink.core.parsers.KeysetParser
+import io.gromif.crypto.tink.extensions.streamingAead
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

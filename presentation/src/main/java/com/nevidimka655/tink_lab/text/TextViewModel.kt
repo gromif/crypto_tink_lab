@@ -4,11 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.crypto.tink.Aead
-import com.nevidimka655.crypto.tink.core.encoders.Base64Util
-import com.nevidimka655.crypto.tink.core.parsers.KeysetParser
-import com.nevidimka655.crypto.tink.extensions.aead
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
+import io.gromif.crypto.tink.core.encoders.Base64Util
+import io.gromif.crypto.tink.core.parsers.KeysetParser
+import io.gromif.crypto.tink.extensions.aead
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

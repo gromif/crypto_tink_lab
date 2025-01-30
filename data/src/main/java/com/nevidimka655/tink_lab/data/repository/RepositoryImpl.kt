@@ -1,12 +1,12 @@
 package com.nevidimka655.tink_lab.data.repository
 
-import com.nevidimka655.crypto.tink.domain.KeysetTemplates
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.model.Repository
 import com.nevidimka655.tink_lab.domain.util.KeyGenerator
 import com.nevidimka655.tink_lab.domain.util.KeyReader
 import com.nevidimka655.tink_lab.domain.util.KeyWriter
+import io.gromif.crypto.tink.domain.KeysetTemplates
 
 private val keysetAssociatedData = "labKey".toByteArray()
 
