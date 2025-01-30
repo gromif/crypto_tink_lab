@@ -7,7 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
-import io.gromif.crypto.tink.core.encoders.HexUtil
+import io.gromif.crypto.tink.encoders.HexUtil
 
 @Module
 @InstallIn(ViewModelComponent::class)

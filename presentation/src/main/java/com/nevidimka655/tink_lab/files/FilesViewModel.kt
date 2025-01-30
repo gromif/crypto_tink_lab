@@ -19,7 +19,7 @@ import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.work.TinkLabFilesWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
-import io.gromif.crypto.tink.core.encoders.Base64Util
+import io.gromif.crypto.tink.encoders.Base64Util
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
