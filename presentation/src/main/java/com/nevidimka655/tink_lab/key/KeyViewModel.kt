@@ -3,7 +3,6 @@ package com.nevidimka655.tink_lab.key
 import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.usecase.CreateLabKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.GetFileAeadListUseCase
@@ -12,6 +11,7 @@ import com.nevidimka655.tink_lab.domain.usecase.LoadKeyUseCase
 import com.nevidimka655.tink_lab.domain.usecase.SaveKeyUseCase
 import com.nevidimka655.tink_lab.domain.util.KeyReader
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.combine

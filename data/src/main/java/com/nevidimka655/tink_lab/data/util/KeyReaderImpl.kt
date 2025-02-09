@@ -2,11 +2,11 @@ package com.nevidimka655.tink_lab.data.util
 
 import android.content.ContentResolver
 import android.net.Uri
-import com.nevidimka655.astracrypt.utils.Mapper
-import com.nevidimka655.astracrypt.utils.Parser
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.domain.model.Key
 import com.nevidimka655.tink_lab.domain.util.KeyReader
+import io.gromif.astracrypt.utils.Mapper
+import io.gromif.astracrypt.utils.Parser
 import io.gromif.crypto.tink.core.parsers.KeysetParserWithKey
 import io.gromif.crypto.tink.core.serializers.KeysetSerializer
 

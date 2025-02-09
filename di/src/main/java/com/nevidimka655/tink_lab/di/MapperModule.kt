@@ -1,6 +1,5 @@
 package com.nevidimka655.tink_lab.di
 
-import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.data.mapper.DataTypeToIdMapper
 import com.nevidimka655.tink_lab.data.mapper.DtoToKeyMapper
@@ -12,6 +11,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
+import io.gromif.astracrypt.utils.Mapper
 
 @Module
 @InstallIn(ViewModelComponent::class)

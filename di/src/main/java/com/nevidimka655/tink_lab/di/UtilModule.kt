@@ -2,9 +2,6 @@ package com.nevidimka655.tink_lab.di
 
 import android.content.Context
 import android.net.Uri
-import com.nevidimka655.astracrypt.utils.Mapper
-import com.nevidimka655.astracrypt.utils.Parser
-import com.nevidimka655.astracrypt.utils.Serializer
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.data.util.KeyGeneratorImpl
 import com.nevidimka655.tink_lab.data.util.KeyReaderImpl
@@ -18,6 +15,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.gromif.astracrypt.utils.Mapper
+import io.gromif.astracrypt.utils.Parser
+import io.gromif.astracrypt.utils.Serializer
 import io.gromif.crypto.tink.core.parsers.KeysetParser
 import io.gromif.crypto.tink.core.parsers.KeysetParserWithKey
 import io.gromif.crypto.tink.core.serializers.KeysetSerializer

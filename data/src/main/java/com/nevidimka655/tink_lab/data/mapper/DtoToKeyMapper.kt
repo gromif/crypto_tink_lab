@@ -1,9 +1,9 @@
 package com.nevidimka655.tink_lab.data.mapper
 
-import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.data.dto.KeyDto
 import com.nevidimka655.tink_lab.domain.model.DataType
 import com.nevidimka655.tink_lab.domain.model.Key
+import io.gromif.astracrypt.utils.Mapper
 
 class DtoToKeyMapper(
     private val idToDataTypeMapper: Mapper<Int, DataType>

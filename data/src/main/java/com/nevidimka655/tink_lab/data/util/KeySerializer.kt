@@ -1,7 +1,7 @@
 package com.nevidimka655.tink_lab.data.util
 
-import com.nevidimka655.astracrypt.utils.Serializer
 import com.nevidimka655.tink_lab.data.dto.KeyDto
+import io.gromif.astracrypt.utils.Serializer
 import io.gromif.crypto.tink.encoders.HexEncoder
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

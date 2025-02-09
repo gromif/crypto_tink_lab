@@ -15,9 +15,9 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.crypto.tink.integration.android.AndroidKeystore
-import com.nevidimka655.astracrypt.utils.Mapper
 import com.nevidimka655.tink_lab.work.TinkLabFilesWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
 import io.gromif.crypto.tink.encoders.Base64Encoder
 import kotlinx.coroutines.CoroutineDispatcher
