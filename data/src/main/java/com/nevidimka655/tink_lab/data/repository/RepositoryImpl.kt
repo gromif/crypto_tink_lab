@@ -6,7 +6,7 @@ import com.nevidimka655.tink_lab.domain.model.Repository
 import com.nevidimka655.tink_lab.domain.util.KeyGenerator
 import com.nevidimka655.tink_lab.domain.util.KeyReader
 import com.nevidimka655.tink_lab.domain.util.KeyWriter
-import io.gromif.crypto.tink.domain.KeysetTemplates
+import io.gromif.crypto.tink.model.KeysetTemplates
 
 private val keysetAssociatedData = "labKey".toByteArray()
 
