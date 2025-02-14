@@ -7,7 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import io.gromif.astracrypt.utils.Serializer
-import io.gromif.crypto.tink.encoders.HexEncoder
+import io.gromif.crypto.tink.core.encoders.HexEncoder
 
 @Module
 @InstallIn(ViewModelComponent::class)
