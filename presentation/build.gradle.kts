@@ -18,7 +18,7 @@ dependencies {
     implementation(projects.features.tinkLab.domain)
     implementation(projects.features.tinkLab.di)
 
-    implementation(projects.core.resources)
+    implementation(projects.ui.resources)
     implementation(projects.core.utils)
     implementation(projects.core.crypto.tink)
 
