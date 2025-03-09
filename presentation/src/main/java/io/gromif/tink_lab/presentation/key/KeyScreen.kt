@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nevidimka655.astracrypt.resources.R
+import io.gromif.astracrypt.resources.R
 import io.gromif.tink_lab.domain.model.DataItem
 import io.gromif.tink_lab.domain.model.DataType
 import io.gromif.tink_lab.domain.model.Key

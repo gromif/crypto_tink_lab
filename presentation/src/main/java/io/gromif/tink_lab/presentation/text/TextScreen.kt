@@ -28,7 +28,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nevidimka655.astracrypt.resources.R
+import io.gromif.astracrypt.resources.R
 import io.gromif.tink_lab.presentation.TinkLab
 import io.gromif.tink_lab.presentation.shared.AssociatedDataTextField
 import io.gromif.tink_lab.presentation.shared.EncryptionToolbar
