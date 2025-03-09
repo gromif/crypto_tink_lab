@@ -40,11 +40,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
-import com.nevidimka655.ui.compose_core.TextFields
-import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
-import com.nevidimka655.ui.compose_core.ext.isCompact
-import com.nevidimka655.ui.compose_core.text_fields.icons.PasswordToggleIconButton
-import com.nevidimka655.ui.compose_core.theme.spaces
 import io.gromif.tink_lab.domain.model.DataItem
 import io.gromif.tink_lab.domain.model.DataType
 import io.gromif.tink_lab.domain.model.Key
@@ -52,6 +47,11 @@ import io.gromif.tink_lab.presentation.TinkLab
 import io.gromif.tink_lab.presentation.key.menu.AeadTypeMenu
 import io.gromif.tink_lab.presentation.key.menu.DataTypeMenu
 import io.gromif.tink_lab.presentation.shared.ToolbarButton
+import io.gromif.ui.compose.core.TextFields
+import io.gromif.ui.compose.core.ext.LocalWindowWidth
+import io.gromif.ui.compose.core.ext.isCompact
+import io.gromif.ui.compose.core.text_fields.icons.PasswordToggleIconButton
+import io.gromif.ui.compose.core.theme.spaces
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest

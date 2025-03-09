@@ -29,13 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevidimka655.astracrypt.resources.R
-import com.nevidimka655.ui.compose_core.OutlinedButtonWithIcon
-import com.nevidimka655.ui.compose_core.ext.LocalWindowWidth
-import com.nevidimka655.ui.compose_core.ext.isCompact
-import com.nevidimka655.ui.compose_core.theme.spaces
 import io.gromif.tink_lab.presentation.TinkLab
 import io.gromif.tink_lab.presentation.shared.AssociatedDataTextField
 import io.gromif.tink_lab.presentation.shared.EncryptionToolbar
+import io.gromif.ui.compose.core.OutlinedButtonWithIcon
+import io.gromif.ui.compose.core.ext.LocalWindowWidth
+import io.gromif.ui.compose.core.ext.isCompact
+import io.gromif.ui.compose.core.theme.spaces
 import kotlinx.coroutines.launch
 
 @Composable
