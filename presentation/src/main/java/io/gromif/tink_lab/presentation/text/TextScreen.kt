@@ -1,6 +1,5 @@
 package io.gromif.tink_lab.presentation.text
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -33,31 +31,36 @@ import io.gromif.tink_lab.presentation.TinkLab
 import io.gromif.tink_lab.presentation.shared.AssociatedDataTextField
 import io.gromif.tink_lab.presentation.shared.EncryptionToolbar
 import io.gromif.ui.compose.core.OutlinedButtonWithIcon
+import io.gromif.ui.compose.core.ext.FlowObserver
 import io.gromif.ui.compose.core.ext.LocalWindowWidth
 import io.gromif.ui.compose.core.ext.isCompact
 import io.gromif.ui.compose.core.theme.spaces
-import kotlinx.coroutines.launch
 
 @Composable
 fun TinkLab.TextScreen(
     modifier: Modifier = Modifier,
-    rawKeyset: String
+    rawKeyset: String,
+    onError: (message: String, exceptionMessage: String?) -> Unit,
 ) {
     val vm: TextViewModel = hiltViewModel()
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) { vm.parseKeysetHandle(rawKeyset = rawKeyset) }
 
     val associatedData by vm.associatedDataState.collectAsStateWithLifecycle()
     val text by vm.textState.collectAsStateWithLifecycle()
 
+    FlowObserver(vm.encryptionExceptionsFlow) {
+        val message = context.getString(R.string.error)
+        onError(message, it.localizedMessage)
+    }
+
     Screen(
         modifier = modifier,
         associatedData = associatedData,
-        onAssociatedDataChange = { vm.setAssociatedData(data = it) },
+        onAssociatedDataChange = vm::setAssociatedData,
         text = text,
-        onTextChange = { vm.setText(text = it) },
+        onTextChange = vm::setText,
         onPasteClick = {
             val textInClipboard = clipboardManager.getText()
             if (textInClipboard != null) vm.setText(textInClipboard.text)
@@ -67,15 +70,8 @@ fun TinkLab.TextScreen(
             val annotatedString = buildAnnotatedString { append(text) }
             clipboardManager.setText(annotatedString)
         },
-        onEncrypt = { vm.encrypt() },
-        onDecrypt = {
-            scope.launch {
-                val decryptResult = vm.decrypt()
-                if (!decryptResult) Toast.makeText(
-                    context, R.string.error, Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
+        onEncrypt = vm::encrypt,
+        onDecrypt = vm::decrypt
     )
 }
 
@@ -91,7 +87,7 @@ private fun Screen(
     onClearClick: () -> Unit = {},
     onCopyClick: () -> Unit = {},
     onEncrypt: () -> Unit = {},
-    onDecrypt: () -> Unit = {}
+    onDecrypt: () -> Unit = {},
 ) = Column(
     modifier = modifier.padding(MaterialTheme.spaces.spaceMedium),
     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)

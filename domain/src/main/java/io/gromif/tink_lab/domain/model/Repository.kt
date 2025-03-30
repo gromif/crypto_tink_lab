@@ -14,4 +14,12 @@ interface Repository {
 
     fun getTextAeadList() : List<String>
 
+    fun isKeysetLoaded(): Boolean
+
+    suspend fun parseKeyset(rawKeyset: String)
+
+    suspend fun encryptText(text: String, associatedData: String): EncryptionResult
+
+    suspend fun decryptText(encryptedText: String, associatedData: String): EncryptionResult
+
 }

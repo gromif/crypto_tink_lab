@@ -18,6 +18,7 @@ import io.gromif.tink_lab.data.dto.KeyDto
 import io.gromif.tink_lab.data.util.KeyGeneratorImpl
 import io.gromif.tink_lab.data.util.KeyReaderImpl
 import io.gromif.tink_lab.data.util.KeyWriterImpl
+import io.gromif.tink_lab.data.util.TextAeadUtil
 import io.gromif.tink_lab.domain.model.Key
 import io.gromif.tink_lab.domain.util.KeyGenerator
 import io.gromif.tink_lab.domain.util.KeyReader
@@ -26,6 +27,9 @@ import io.gromif.tink_lab.domain.util.KeyWriter
 @Module
 @InstallIn(ViewModelComponent::class)
 internal object UtilModule {
+
+    @Provides
+    fun provideTextAeadUtil() = TextAeadUtil()
 
     @Provides
     fun provideKeyGenerator(keysetSerializer: KeysetSerializer): KeyGenerator =
