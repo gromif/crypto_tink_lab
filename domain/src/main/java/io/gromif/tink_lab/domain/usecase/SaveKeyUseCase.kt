@@ -9,10 +9,10 @@ class SaveKeyUseCase(
 
     operator fun invoke(
         key: Key,
-        uriString: String,
-        keysetPassword: String
+        path: String,
+        password: String
     ) {
-        repository.save(key = key, uriString = uriString, keysetPassword = keysetPassword)
+        repository.save(key = key, path = path, password = password)
     }
 
 }

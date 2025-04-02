@@ -9,6 +9,8 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkInfo
@@ -33,6 +35,7 @@ private const val STATE_SOURCE_URI = "uri_source"
 private const val STATE_SOURCE_NAME = "source_name"
 private const val STATE_ASSOCIATED_DATA = "ad"
 
+@OptIn(SavedStateHandleSaveableApi::class)
 @HiltViewModel
 internal class FilesViewModel @Inject constructor(
     private val state: SavedStateHandle,
@@ -46,7 +49,7 @@ internal class FilesViewModel @Inject constructor(
     private val sourceUriString = state.getStateFlow<String?>(STATE_SOURCE_URI, null)
     val destinationDirName = state.getStateFlow(STATE_DESTINATION_DIR_NAME, "")
     val sourceDirName = state.getStateFlow(STATE_SOURCE_NAME, "")
-    val associatedData = state.getStateFlow(STATE_ASSOCIATED_DATA, "")
+    var associatedData by state.saveable(STATE_ASSOCIATED_DATA) { mutableStateOf("") }
     var isWorkerActive by mutableStateOf(false)
         private set
 
@@ -68,7 +71,7 @@ internal class FilesViewModel @Inject constructor(
             )
         }
         val encryptedAssociatedData = async {
-            base64Encoder.encode(dataAead.encrypt(associatedData.value.toByteArray(), workerAD))
+            base64Encoder.encode(dataAead.encrypt(associatedData.toByteArray(), workerAD))
         }
         val encryptedKeyset = async {
             base64Encoder.encode(dataAead.encrypt(rawKeyset.toByteArray(), workerAD))
@@ -109,7 +112,5 @@ internal class FilesViewModel @Inject constructor(
         state[STATE_DESTINATION_DIR_URI] = uriToStringMapper(uri)
         state[STATE_DESTINATION_DIR_NAME] = documentFile?.name ?: ""
     }
-
-    fun setAssociatedData(data: String) = state.set(STATE_ASSOCIATED_DATA, data)
 
 }

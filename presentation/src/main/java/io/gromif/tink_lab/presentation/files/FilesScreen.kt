@@ -1,7 +1,5 @@
 package io.gromif.tink_lab.presentation.files
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -48,29 +46,25 @@ fun TinkLab.FilesScreen(
 ) {
     val context = LocalContext.current
     val vm: FilesViewModel = hiltViewModel()
-    val associatedData by vm.associatedData.collectAsStateWithLifecycle()
     val source by vm.sourceDirName.collectAsStateWithLifecycle()
     val destination by vm.destinationDirName.collectAsStateWithLifecycle()
 
-    val sourceContract = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { if (it != null) vm.setSource(context, it) }
-
-    val destinationDirContract = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { if (it != null) vm.setDestinationDir(context, it) }
+    val inputContract = FilesContracts.openInput { vm.setSource(context, it) }
+    val outputDirContract = FilesContracts.openOutputDir { vm.setDestinationDir(context, it) }
 
     Screen(
         modifier = modifier,
+        state = FilesScreenState(
+            associatedData = vm.associatedData,
+            source = source,
+            destination = destination,
+            processingState = vm.isWorkerActive
+        ),
         onEncrypt = { vm.startFilesWorker(rawKeyset = rawKeyset, true) },
         onDecrypt = { vm.startFilesWorker(rawKeyset = rawKeyset, false) },
-        associatedData = associatedData,
-        onAssociatedDataChange = { vm.setAssociatedData(it) },
-        source = source,
-        onSourceClick = { sourceContract.launch(arrayOf("*/*")) },
-        destination = destination,
-        onDestinationClick = { destinationDirContract.launch(null) },
-        processingState = vm.isWorkerActive
+        onAssociatedDataChange = vm::associatedData::set,
+        onSourceClick = { inputContract.launch(arrayOf("*/*")) },
+        onDestinationClick = { outputDirContract.launch(null) },
     )
 }
 
@@ -78,15 +72,12 @@ fun TinkLab.FilesScreen(
 @Composable
 private fun Screen(
     modifier: Modifier = Modifier,
+    state: FilesScreenState = FilesScreenState(),
     onEncrypt: () -> Unit = {},
     onDecrypt: () -> Unit = {},
-    associatedData: String = "PREVIEW_AD",
     onAssociatedDataChange: (String) -> Unit = {},
-    source: String = "SOURCE",
     onSourceClick: () -> Unit = {},
-    destination: String = "Destination",
     onDestinationClick: () -> Unit = {},
-    processingState: Boolean = false
 ) = Column(
     modifier = modifier.padding(MaterialTheme.spaces.spaceMedium),
     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
@@ -96,19 +87,19 @@ private fun Screen(
         EncryptionToolbar(onEncrypt = onEncrypt, onDecrypt = onDecrypt)
         AssociatedDataTextField(
             modifier = Modifier.fillMaxWidth(),
-            value = associatedData,
+            value = state.associatedData,
             onValueChange = onAssociatedDataChange
         )
-        SourceTextField(value = source, onSourceClick = onSourceClick)
-        DestinationTextField(value = destination, onDestinationClick = onDestinationClick)
-        DetailsCard(state = processingState)
+        SourceTextField(value = state.source, onSourceClick = onSourceClick)
+        DestinationTextField(value = state.destination, onDestinationClick = onDestinationClick)
+        DetailsCard(state = state.processingState)
     } else Row(horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)) {
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.spaces.spaceMedium)
         ) {
             EncryptionToolbar(onEncrypt = onEncrypt, onDecrypt = onDecrypt)
-            DetailsCard(state = processingState)
+            DetailsCard(state = state.processingState)
         }
         Column(
             modifier = Modifier.weight(1f),
@@ -116,11 +107,11 @@ private fun Screen(
         ) {
             AssociatedDataTextField(
                 modifier = Modifier.fillMaxWidth(),
-                value = associatedData,
+                value = state.associatedData,
                 onValueChange = onAssociatedDataChange
             )
-            SourceTextField(value = source, onSourceClick = onSourceClick)
-            DestinationTextField(value = destination, onDestinationClick = onDestinationClick)
+            SourceTextField(value = state.source, onSourceClick = onSourceClick)
+            DestinationTextField(value = state.destination, onDestinationClick = onDestinationClick)
         }
     }
 }

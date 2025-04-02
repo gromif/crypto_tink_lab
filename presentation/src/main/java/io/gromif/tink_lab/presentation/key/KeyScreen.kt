@@ -1,8 +1,5 @@
 package io.gromif.tink_lab.presentation.key
 
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,14 +30,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.gromif.astracrypt.resources.R
-import io.gromif.tink_lab.domain.model.DataItem
 import io.gromif.tink_lab.domain.model.DataType
 import io.gromif.tink_lab.domain.model.Key
 import io.gromif.tink_lab.presentation.TinkLab
@@ -48,88 +42,82 @@ import io.gromif.tink_lab.presentation.key.menu.AeadTypeMenu
 import io.gromif.tink_lab.presentation.key.menu.DataTypeMenu
 import io.gromif.tink_lab.presentation.shared.ToolbarButton
 import io.gromif.ui.compose.core.TextFields
+import io.gromif.ui.compose.core.ext.FlowObserver
 import io.gromif.ui.compose.core.ext.LocalWindowWidth
 import io.gromif.ui.compose.core.ext.isCompact
 import io.gromif.ui.compose.core.text_fields.icons.PasswordToggleIconButton
 import io.gromif.ui.compose.core.theme.spaces
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun TinkLab.KeyScreen(
     modifier: Modifier = Modifier,
     onRequestKeysetChannel: Flow<Unit>,
+    onInvalidPassword: suspend () -> Unit,
     navigateToTextMode: (keyset: String) -> Unit,
     navigateToFilesMode: (keyset: String) -> Unit
 ) {
     val vm: KeyViewModel = hiltViewModel()
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    val dataType by vm.dataTypeState.collectAsStateWithLifecycle(DataType.Files)
-    val aeadType by vm.aeadTypeState.collectAsStateWithLifecycle()
-    val keysetPassword by vm.keysetPasswordState.collectAsStateWithLifecycle()
+    var uiMode by vm.uiMode
+    var aeadType by vm.aeadType
+    var dataType by vm.dataType
     var keysetPasswordErrorState by remember { mutableStateOf(false) }
-    val keysetUriToLoadState by vm.keysetUriToLoadState.collectAsStateWithLifecycle()
-    val isLoadMode = remember(keysetUriToLoadState) { keysetUriToLoadState.isNotEmpty() }
 
     fun navigate(dataType: DataType, rawKeyset: String) = when (dataType) {
         DataType.Files -> navigateToFilesMode(rawKeyset)
         DataType.Text -> navigateToTextMode(rawKeyset)
     }
 
-    LaunchedEffect(Unit) {
-        onRequestKeysetChannel.collectLatest {
-            val key: Key
-            if (keysetUriToLoadState.isNotEmpty()) {
-                val loadedKey = vm.load()
+    FlowObserver(onRequestKeysetChannel) {
+        var key: Key? = null
+        val currentUiMode = uiMode
+        when (currentUiMode) {
+            UiMode.CreateKey -> key = vm.createKey(dataType, aeadType)
+            is UiMode.LoadKey -> {
+                val loadedKey = vm.load(path = currentUiMode.keysetPath)
                 if (loadedKey == null) {
                     keysetPasswordErrorState = true
-                    Toast.makeText(
-                        context, context.getString(R.string.t_invalidPass), Toast.LENGTH_SHORT
-                    ).show()
-                    delay(3.seconds)
+                    onInvalidPassword()
                     keysetPasswordErrorState = false
-                    return@collectLatest
                 } else key = loadedKey
-            } else key = vm.createKey()
-            navigate(key.dataType, key.rawKeyset)
+            }
         }
+        if (key != null) navigate(key.dataType, key.rawKeyset)
     }
 
-    val openContract = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        if (it != null) vm.setKeysetUriLoad(it)
+    val openContract = KeyContracts.open {
+        uiMode = UiMode.LoadKey(keysetPath = it.toString())
     }
-
-    val saveContract = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("text/plain")
-    ) {
-        if (it != null) scope.launch {
-            val key = vm.save(uri = it)
-            vm.setKeysetPassword("")
+    val saveContract = KeyContracts.save {
+        scope.launch {
+            val key = vm.createKey(dataType, aeadType)
+            vm.save(key = key, uri = it)
+            vm.keysetPassword = ""
             navigate(key.dataType, key.rawKeyset)
         }
     }
 
     Screen(
         modifier = modifier,
-        fileAeadList = vm.fileAeadList,
-        textAeadList = vm.textAeadList,
-        isLoadingMode = isLoadMode,
-        isWrongPassword = keysetPasswordErrorState,
-        dataTypeIndex = dataType.ordinal,
-        aeadType = aeadType,
-        onSelectDataType = { vm.setDataType(it) },
-        onSelectAeadType = { vm.setAeadType(it) },
+        state = KeyScreenState(
+            uiMode = uiMode,
+            fileAeadList = vm.fileAeadList,
+            textAeadList = vm.textAeadList,
+            dataTypes = DataType.entries,
+            dataType = dataType,
+            aeadType = aeadType,
+            keysetKey = vm.keysetPassword,
+            isWrongPassword = keysetPasswordErrorState,
+        ),
+        onSelectDataType = { dataType = it },
+        onSelectAeadType = { aeadType = it },
         onLoadClick = { openContract.launch(arrayOf("text/plain")) },
         onSaveClick = { saveContract.launch("ac_key_${abs(Random.nextInt())}.txt") },
-        keysetKey = keysetPassword,
-        onChangeKeysetKey = { vm.setKeysetPassword(it) }
+        onChangeKeysetKey = vm::keysetPassword::set
     )
 }
 
@@ -138,20 +126,11 @@ fun TinkLab.KeyScreen(
 @Composable
 private fun Screen(
     modifier: Modifier = Modifier,
-    fileAeadList: List<String> = listOf(),
-    textAeadList: List<String> = listOf(),
-    isLoadingMode: Boolean = false,
-    isWrongPassword: Boolean = false,
-    dataTypes: List<DataItem> = listOf(
-        DataItem(R.string.files, DataType.Files), DataItem(R.string.text, DataType.Text)
-    ),
-    dataTypeIndex: Int = 0,
-    aeadType: String = "TEST_AEAD_TYPE",
+    state: KeyScreenState = KeyScreenState(),
     onSelectDataType: (DataType) -> Unit = {},
     onSelectAeadType: (String) -> Unit = {},
     onLoadClick: () -> Unit = {},
     onSaveClick: () -> Unit = {},
-    keysetKey: String = "",
     onChangeKeysetKey: (String) -> Unit = {}
 ) = Box(
     modifier = modifier
@@ -159,7 +138,7 @@ private fun Screen(
         .verticalScroll(rememberScrollState()),
     contentAlignment = Alignment.Center
 ) {
-    val dataType = remember(dataTypeIndex) { dataTypes[dataTypeIndex] }
+    val isLoadMode = remember(state.uiMode) { state.uiMode is UiMode.LoadKey }
     ElevatedCard {
         val localWindowWidth = LocalWindowWidth.current
         val defaultVerticalArrangement = Arrangement.spacedBy(
@@ -179,19 +158,19 @@ private fun Screen(
             fun dataTypeMenu(modifier: Modifier = Modifier.fillMaxWidth()) = DataTypeMenu(
                 modifier = modifier,
                 expanded = showDataTypeMenu,
-                enabled = !isLoadingMode,
-                text = stringResource(id = dataType.titleResId),
+                enabled = !isLoadMode,
+                text = stringResource(id = state.dataType.titleStringId()),
                 label = stringResource(id = R.string.lab_dataType),
-                onExpandedChange = { if (!isLoadingMode) showDataTypeMenu = it },
-                items = dataTypes,
+                onExpandedChange = { if (!isLoadMode) showDataTypeMenu = it },
+                items = state.dataTypes,
                 onSelect = onSelectDataType
             )
 
             var showAeadTypeMenu by remember { mutableStateOf(false) }
-            val aeadTypes = remember(dataType) {
-                when (dataType.type) {
-                    DataType.Files -> fileAeadList
-                    DataType.Text -> textAeadList
+            val aeadTypes = remember(state.dataType) {
+                when (state.dataType) {
+                    DataType.Files -> state.fileAeadList
+                    DataType.Text -> state.textAeadList
                 }
             }
             LaunchedEffect(aeadTypes) { onSelectAeadType(aeadTypes[0]) }
@@ -199,19 +178,19 @@ private fun Screen(
             @Composable
             fun aeadTypeMenu() = AeadTypeMenu(
                 expanded = showAeadTypeMenu,
-                enabled = !isLoadingMode,
-                text = aeadType,
+                enabled = !isLoadMode,
+                text = state.aeadType,
                 label = stringResource(id = R.string.encryption_type),
-                onExpandedChange = { if (!isLoadingMode) showAeadTypeMenu = it },
+                onExpandedChange = { if (!isLoadMode) showAeadTypeMenu = it },
                 items = aeadTypes,
                 onSelect = onSelectAeadType
             )
 
             @Composable
             fun keysetKeyField() = KeysetKeyTextField(
-                value = keysetKey,
+                value = state.keysetKey,
                 onValueChange = onChangeKeysetKey,
-                isError = isWrongPassword
+                isError = state.isWrongPassword
             )
 
             @Composable
@@ -238,7 +217,7 @@ private fun Screen(
                 keysetKeyField()
                 dataTypeMenu()
                 aeadTypeMenu()
-                if (!isLoadingMode) toolbar()
+                if (!isLoadMode) toolbar()
             } else {
                 Row(horizontalArrangement = defaultHorizontalArrangement) {
                     val horizontalAlignment = Alignment.CenterHorizontally
@@ -256,7 +235,7 @@ private fun Screen(
                         horizontalAlignment = horizontalAlignment
                     ) {
                         aeadTypeMenu()
-                        if (!isLoadingMode) toolbar(
+                        if (!isLoadMode) toolbar(
                             modifier = Modifier.height(TextFieldDefaults.MinHeight)
                         )
                     }

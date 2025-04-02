@@ -6,9 +6,9 @@ interface Repository {
 
     fun createKey(dataType: DataType, aeadType: String) : Key
 
-    fun save(key: Key, uriString: String, keysetPassword: String)
+    fun save(key: Key, path: String, password: String)
 
-    fun load(uriString: String, keysetPassword: String): KeyReader.Result
+    fun load(path: String, password: String): KeyReader.Result
 
     fun getFileAeadList() : List<String>
 

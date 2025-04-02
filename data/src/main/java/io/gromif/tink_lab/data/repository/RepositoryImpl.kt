@@ -34,19 +34,19 @@ class RepositoryImpl(
         return keyGenerator(dataType = dataType, aeadType = aeadType)
     }
 
-    override fun save(key: Key, uriString: String, keysetPassword: String) {
+    override fun save(key: Key, path: String, password: String) {
         keyWriter(
-            uriString = uriString,
+            uriString = path,
             key = key,
-            keysetPassword = keysetPassword,
+            keysetPassword = password,
             keysetAssociatedData = keysetAssociatedData
         )
     }
 
-    override fun load(uriString: String, keysetPassword: String): KeyReader.Result {
+    override fun load(path: String, password: String): KeyReader.Result {
         return keyReader(
-            uriString = uriString,
-            keysetPassword = keysetPassword,
+            uriString = path,
+            keysetPassword = password,
             keysetAssociatedData = keysetAssociatedData
         )
     }

@@ -1,30 +1,35 @@
 package io.gromif.tink_lab.presentation.key
 
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
 import io.gromif.tink_lab.domain.model.DataType
+import io.gromif.tink_lab.domain.model.Key
 import io.gromif.tink_lab.domain.usecase.CreateLabKeyUseCase
 import io.gromif.tink_lab.domain.usecase.GetFileAeadListUseCase
 import io.gromif.tink_lab.domain.usecase.GetTextAeadListUseCase
 import io.gromif.tink_lab.domain.usecase.LoadKeyUseCase
 import io.gromif.tink_lab.domain.usecase.SaveKeyUseCase
 import io.gromif.tink_lab.domain.util.KeyReader
+import io.gromif.tink_lab.presentation.key.saver.DataTypeSaver
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val UI_MODE = "ui_mode"
 private const val KEYSET_PASSWORD = "kp"
-private const val KEYSET_URI_LOAD = "kp_uri_load"
 private const val DATA_TYPE = "data_type"
 private const val AEAD_TYPE = "aead_type"
 
+@OptIn(SavedStateHandleSaveableApi::class)
 @HiltViewModel
 internal class KeyViewModel @Inject constructor(
     @IoDispatcher
@@ -40,36 +45,25 @@ internal class KeyViewModel @Inject constructor(
     val fileAeadList = getFileAeadListUseCase()
     val textAeadList = getTextAeadListUseCase()
 
-    val dataTypeState = state.getStateFlow(DATA_TYPE, 0).map { DataType.entries[it] }
-    val aeadTypeState = state.getStateFlow(AEAD_TYPE, fileAeadList[0])
-    private val keysetHandleFlow = dataTypeState.combine(aeadTypeState) { dataType, aeadType ->
-        createLabKeyUseCase(dataType = dataType, aeadType = aeadType.uppercase())
+    val uiMode = state.saveable(UI_MODE) { mutableStateOf<UiMode>(UiMode.CreateKey) }
+    var keysetPassword by state.saveable(KEYSET_PASSWORD) { mutableStateOf("") }
+    val aeadType = state.saveable(AEAD_TYPE) { mutableStateOf(fileAeadList[0]) }
+    val dataType = state.saveable(key = DATA_TYPE, stateSaver = DataTypeSaver()) {
+        mutableStateOf(DataType.Files)
     }
 
-    val keysetUriToLoadState = state.getStateFlow(KEYSET_URI_LOAD, "")
-    val keysetPasswordState = state.getStateFlow(KEYSET_PASSWORD, "")
+    fun createKey(dataType: DataType, aeadType: String): Key =
+        createLabKeyUseCase(dataType, aeadType.uppercase())
 
-    suspend fun createKey() = keysetHandleFlow.first()
-
-    suspend fun save(uri: Uri) = withContext(defaultDispatcher) {
-        val keysetPassword = keysetPasswordState.value
+    suspend fun save(key: Key, uri: Uri) = withContext(defaultDispatcher) {
+        val keysetPassword = keysetPassword
         val uriString = uriToStringMapper(uri)
-        createKey().also {
-            saveKeyUseCase(key = it, uriString = uriString, keysetPassword = keysetPassword)
-        }
+        saveKeyUseCase(key = key, path = uriString, password = keysetPassword)
     }
 
-    suspend fun load() = withContext(defaultDispatcher) {
-        val result = loadKeyUseCase(
-            uriString = keysetUriToLoadState.value,
-            keysetPassword = keysetPasswordState.value
-        )
+    suspend fun load(path: String) = withContext(defaultDispatcher) {
+        val result = loadKeyUseCase(path = path, password = keysetPassword)
         if (result is KeyReader.Result.Success) result.key else null
     }
-
-    fun setDataType(dataType: DataType) = state.set(DATA_TYPE, dataType.ordinal)
-    fun setAeadType(type: String) = state.set(AEAD_TYPE, type)
-    fun setKeysetPassword(keysetPassword: String) = state.set(KEYSET_PASSWORD, keysetPassword)
-    fun setKeysetUriLoad(uri: Uri) = state.set(KEYSET_URI_LOAD, uriToStringMapper(uri))
 
 }

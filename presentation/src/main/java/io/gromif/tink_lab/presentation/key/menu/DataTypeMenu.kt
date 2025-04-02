@@ -13,8 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import io.gromif.tink_lab.domain.model.DataItem
 import io.gromif.tink_lab.domain.model.DataType
+import io.gromif.tink_lab.presentation.key.titleStringId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +24,7 @@ internal fun DataTypeMenu(
     enabled: Boolean = true,
     text: String = "Field",
     label: String = "Label",
-    items: List<DataItem>,
+    items: List<DataType>,
     onExpandedChange: (Boolean) -> Unit = {},
     onSelect: (DataType) -> Unit = {},
 ) = ExposedDropdownMenuBox(
@@ -48,9 +48,9 @@ internal fun DataTypeMenu(
     ) {
         items.forEach {
             DropdownMenuItem(
-                text = { Text(text = stringResource(id = it.titleResId)) },
+                text = { Text(text = stringResource(id = it.titleStringId())) },
                 onClick = {
-                    onSelect(it.type)
+                    onSelect(it)
                     onExpandedChange(false)
                 }
             )
