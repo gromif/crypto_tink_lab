@@ -1,5 +1,3 @@
-@file:Suppress("ClassName")
-
 package io.gromif.tink_lab.presentation.files
 
 import android.net.Uri
