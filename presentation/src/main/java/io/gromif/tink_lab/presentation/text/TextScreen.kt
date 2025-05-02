@@ -1,5 +1,6 @@
 package io.gromif.tink_lab.presentation.text
 
+import android.content.ClipData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,12 +18,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -35,6 +37,7 @@ import io.gromif.ui.compose.core.ext.FlowObserver
 import io.gromif.ui.compose.core.ext.LocalWindowWidth
 import io.gromif.ui.compose.core.ext.isCompact
 import io.gromif.ui.compose.core.theme.spaces
+import kotlinx.coroutines.launch
 
 @Composable
 fun TinkLab.TextScreen(
@@ -43,8 +46,9 @@ fun TinkLab.TextScreen(
     onError: (message: String, exceptionMessage: String?) -> Unit,
 ) {
     val vm: TextViewModel = hiltViewModel()
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     LaunchedEffect(Unit) { vm.parseKeysetHandle(rawKeyset = rawKeyset) }
 
     val associatedData by vm.associatedDataState.collectAsStateWithLifecycle()
@@ -62,13 +66,22 @@ fun TinkLab.TextScreen(
         text = text,
         onTextChange = vm::setText,
         onPasteClick = {
-            val textInClipboard = clipboardManager.getText()
-            if (textInClipboard != null) vm.setText(textInClipboard.text)
+            scope.launch {
+                clipboard.getClipEntry()?.let {
+                    val textInClipboard = try {
+                        it.clipData.getItemAt(0).text.toString()
+                    } catch (_: Exception) { "" }
+                    vm.setText(textInClipboard)
+                }
+            }
         },
         onClearClick = { vm.setText(text = "") },
         onCopyClick = {
-            val annotatedString = buildAnnotatedString { append(text) }
-            clipboardManager.setText(annotatedString)
+            scope.launch {
+                val clipData = ClipData.newPlainText("Text", text)
+                val clipEntry = ClipEntry(clipData)
+                clipboard.setClipEntry(clipEntry)
+            }
         },
         onEncrypt = vm::encrypt,
         onDecrypt = vm::decrypt
