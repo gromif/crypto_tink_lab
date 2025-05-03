@@ -10,10 +10,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.Parser
 import io.gromif.astracrypt.utils.Serializer
-import io.gromif.crypto.tink.core.parsers.KeysetParser
-import io.gromif.crypto.tink.core.parsers.KeysetParserWithKey
-import io.gromif.crypto.tink.core.serializers.KeysetSerializer
-import io.gromif.crypto.tink.core.serializers.KeysetSerializerWithKey
+import io.gromif.crypto.tink.keyset.parser.KeysetParser
+import io.gromif.crypto.tink.keyset.parser.KeysetParserWithKey
+import io.gromif.crypto.tink.keyset.serializers.KeysetSerializer
+import io.gromif.crypto.tink.keyset.serializers.KeysetSerializerWithKey
 import io.gromif.tink_lab.data.dto.KeyDto
 import io.gromif.tink_lab.data.util.KeyGeneratorImpl
 import io.gromif.tink_lab.data.util.KeyReaderImpl

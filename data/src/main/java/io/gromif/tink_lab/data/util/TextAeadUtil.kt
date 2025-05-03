@@ -2,7 +2,7 @@ package io.gromif.tink_lab.data.util
 
 import com.google.crypto.tink.Aead
 import com.google.crypto.tink.KeysetHandle
-import io.gromif.crypto.tink.extensions.aead
+import io.gromif.crypto.tink.core.extensions.aead
 
 class TextAeadUtil {
     private var targetKeysetHandle: KeysetHandle? = null

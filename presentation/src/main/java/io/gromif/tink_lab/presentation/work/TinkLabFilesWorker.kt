@@ -27,8 +27,8 @@ import io.gromif.astracrypt.utils.Api
 import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.dispatchers.IoDispatcher
 import io.gromif.crypto.tink.core.encoders.Base64Encoder
-import io.gromif.crypto.tink.core.parsers.KeysetParser
-import io.gromif.crypto.tink.extensions.streamingAead
+import io.gromif.crypto.tink.core.extensions.streamingAead
+import io.gromif.crypto.tink.keyset.parser.KeysetParser
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

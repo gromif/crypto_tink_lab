@@ -4,8 +4,8 @@ import android.content.ContentResolver
 import android.net.Uri
 import io.gromif.astracrypt.utils.Mapper
 import io.gromif.astracrypt.utils.Serializer
-import io.gromif.crypto.tink.core.parsers.KeysetParser
-import io.gromif.crypto.tink.core.serializers.KeysetSerializerWithKey
+import io.gromif.crypto.tink.keyset.parser.KeysetParser
+import io.gromif.crypto.tink.keyset.serializers.KeysetSerializerWithKey
 import io.gromif.tink_lab.data.dto.KeyDto
 import io.gromif.tink_lab.domain.model.Key
 import io.gromif.tink_lab.domain.util.KeyWriter

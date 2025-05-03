@@ -2,7 +2,7 @@ package io.gromif.tink_lab.data.util
 
 import com.google.crypto.tink.KeyTemplates
 import com.google.crypto.tink.KeysetHandle
-import io.gromif.crypto.tink.core.serializers.KeysetSerializer
+import io.gromif.crypto.tink.keyset.serializers.KeysetSerializer
 import io.gromif.tink_lab.domain.model.DataType
 import io.gromif.tink_lab.domain.model.Key
 import io.gromif.tink_lab.domain.util.KeyGenerator

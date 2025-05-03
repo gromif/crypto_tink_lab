@@ -2,8 +2,8 @@ package io.gromif.tink_lab.data.repository
 
 import com.google.crypto.tink.KeysetHandle
 import io.gromif.crypto.tink.core.encoders.Base64Encoder
-import io.gromif.crypto.tink.core.parsers.KeysetParser
-import io.gromif.crypto.tink.model.KeysetTemplates
+import io.gromif.crypto.tink.keyset.KeysetTemplates
+import io.gromif.crypto.tink.keyset.parser.KeysetParser
 import io.gromif.tink_lab.data.util.TextAeadUtil
 import io.gromif.tink_lab.domain.model.DataType
 import io.gromif.tink_lab.domain.model.EncryptionException
